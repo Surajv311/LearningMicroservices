@@ -1,0 +1,1 @@
+used command: uvicorn app2:app --port 8001 --reload for port 8001, similar app1 file for port 8000
