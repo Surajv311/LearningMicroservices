@@ -47,7 +47,10 @@ def read_root():
     else:
         return "not working"
     
-
+@app.get("/pl") # posttgres local
+def read_root():
+    # health of postgresql url, done port mapping
+    print('checking postgres health')
 
 
 
