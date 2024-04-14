@@ -59,15 +59,16 @@ docker stop 4c3199c94903
 docker stop redislocal 
 docker start redislocal
 
-
 pip install redis
 pip freeze > requirements.txt 
 
 
-
-docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 postgres # -e is env variable, if you add -d in the command, the terminal will run in detached mode - so in background all postgresql setup commands would run and you can continue using same terminal
+docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres # -e is env variable, if you add -d in the command, the terminal will run in detached mode - so in background all postgresql setup commands would run and you can continue using same terminal
 
 docker ps
+
+ docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
+
 
 https://dbeaver.io/ - dbeaver to see postgres gui
 
