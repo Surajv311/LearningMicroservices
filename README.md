@@ -67,11 +67,30 @@ docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTG
 
 docker ps
 
- docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
+docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
+psql -U postgres
+postgres-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
+postgres-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
+postgres-# grant all privileges on database fapidb to postgresdluser;
+(for all 3 commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
 
 
 https://dbeaver.io/ - dbeaver to see postgres gui
 
+pydantic: 
+One of the primary ways of defining schema in Pydantic is via models. Models are simply classes which inherit from pydantic.BaseModel and define fields as annotated attributes.
+Pydantic is the most widely used data validation library for Python.
+Data classes are one of the new features of Python 3.7. With data classes, you do not have to write boilerplate code to get proper initialization, representation, and comparisons for your objects.
+In Python, a data class is a class that is designed to only hold data values. They aren't different from regular classes, but they usually don't have any other methods. They are typically used to store information that will be passed between different parts of a program or a system.
+https://www.dataquest.io/blog/how-to-use-python-data-classes/
+Eg of pydantic: 
+from pydantic import BaseModel
+class User(BaseModel):
+    id: int
+    name: str = 'Jane Doe'
+user = User(id='123')
+assert user.id == 123
+assert isinstance(user.id, int)
 
 
 
