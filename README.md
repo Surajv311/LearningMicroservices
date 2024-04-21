@@ -72,7 +72,27 @@ psql -U postgres
 postgres-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
 postgres-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
 postgres-# grant all privileges on database fapidb to postgresdluser;
-(for all 3 commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
+postgres=# \c fapidb (to connect to our database)
+(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
+fapidb-# \dt (to list down all tables)
+fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL);
+fapidb=# INSERT INTO tpsqltable VALUES (1, 'suraj', 'test');
+fapidb=# select * from tpsqltable;
+ id | name  | type 
+----+-------+------
+  1 | suraj | test
+(1 row)
+
+
+
+pip install SQLAlchemy psycopg2-binary
+
+
+
+
+
+
+
 
 
 https://dbeaver.io/ - dbeaver to see postgres gui
