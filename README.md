@@ -99,6 +99,10 @@ postgres=# \du
  postgresdockerlocal | 
 
 to grant privileges to postgresdluser (because same user I am using in code to access the database and tables) used: 
+postgres=# GRANT pg_read_all_data TO postgresdluser;
+postgres=# GRANT pg_write_all_data TO postgresdluser;
+postgres=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluser;
+
 
 
 
@@ -157,10 +161,18 @@ https://www.youtube.com/watch?v=reNPNDustQU
 https://www.youtube.com/watch?v=VrZh4f9B-mg
 https://www.youtube.com/watch?v=d_ugoWsvGLI
 
+https://fastapi.tiangolo.com/async/
+https://www.youtube.com/watch?v=2X8B_X2c27Q
 
 
 
-
+https://stackoverflow.com/questions/22483555/postgresql-give-all-permissions-to-a-user-on-a-postgresql-database
+https://stackoverflow.com/questions/50180667/how-can-i-connect-to-a-database-as-another-user
+https://stackoverflow.com/questions/60138692/sqlalchemy-psycopg2-errors-insufficientprivilege-permission-denied-for-relation
+https://stackoverflow.com/questions/63044935/flask-sqlalchemy-postgres-error-could-not-connect-to-server-connection-refuse
+https://stackoverflow.com/questions/39257147/convert-pandas-dataframe-to-json-format
+https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-fast-api-from-installation-to-integration-825f875f9f7d
+https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
 
 
 

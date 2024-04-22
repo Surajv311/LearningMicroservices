@@ -89,9 +89,37 @@ def get_data():
 #     # health of postgresql url, done port mapping
 #     print('checking postgres health')
 
+########################################################################
+
+@app.get("/redis")  # redis local
+async def redisfun():
+    x = rd.ping()
+    if x is not None:
+        return "working"
+    else:
+        return "not working"
+@app.get("/postgres")
+async def postgresfun():
+    db = SessionLocal()
+    sql = "select * from tpsqltable"
+    df = pd.read_sql(sql, con=engine)
+    json_data = json.dumps(json.loads(df.to_json(orient="records")))
+    db.close()
+    return {json_data}
+
+@app.get("/hasync")
+def get_status_of_all():
+    url1 = 'http://127.0.0.1:8000/postgres'
+    url2 = 'http://127.0.0.1:8000/redis'
+    response1 = requests.get(url1)
+    response2 = requests.get(url2)
+    print(f"Pinging both redis and postgres")
+    data1 = str(json.loads(response1.text))
+    data2 = str(json.loads(response2.text))
+    return data1+data2
 
 
-
+########################################################################
 
 
 
