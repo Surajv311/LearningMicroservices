@@ -73,8 +73,10 @@ root@e4fb5a81ca46:/# psql -U postgres
 postgres-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
 postgres-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
 postgres-# grant all privileges on database fapidb to postgresdluser;
-postgres-# grant all privileges on table tpsqltable to postgresdluser;
-postgres=# \c fapidb postgresdluser (to connect to our database with the given user)
+postgres=# \c fapidb (to connect to our database)
+
+######## postgres=# \c fapidb postgresdluser (to connect to our database with the given user) ########
+
 (for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
 fapidb-# \dt (to list down all tables)
 fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL);
@@ -85,7 +87,15 @@ fapidb=# select * from tpsqltable;
   1 | suraj | test
 (1 row)
 
+postgres=# \du
+                                  List of roles
+      Role name      |                         Attributes                         
+---------------------+------------------------------------------------------------
+ postgres            | Superuser, Create role, Create DB, Replication, Bypass RLS
+ postgresdluser      | 
+ postgresdockerlocal | 
 
+to grant privileges to postgresdluser used: 
 
 pip install SQLAlchemy psycopg2-binary
 pip install pydantic pandas
