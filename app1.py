@@ -1,8 +1,19 @@
 from typing import Union
 import json
 from fastapi import FastAPI
+import fastapi as _fastapi
 from pydantic import BaseModel
 import requests
+import schemas as _schemas
+from typing import TYPE_CHECKING, List
+import sqlalchemy.orm as _orm
+import services as _services
+import pandas as pd
+from sqlalchemy import *
+from database import DATABASE_URL, engine, SessionLocal, Base
+
+if TYPE_CHECKING:
+    from sqlalchemy.orm import Session
 
 app = FastAPI()
 
@@ -16,7 +27,6 @@ app = FastAPI()
 
 
 import redis
-
 rd = redis.Redis(host="localhost", port=7001, db =0)
 
 
@@ -46,11 +56,38 @@ def read_root():
         return "working"
     else:
         return "not working"
-    
-@app.get("/pl") # posttgres local
-def read_root():
-    # health of postgresql url, done port mapping
-    print('checking postgres health')
+
+
+
+# @app.post("/psql/create/", response_model=_schemas._PData)
+# def create_data(
+#     contact: _schemas._createData,
+#     db: _orm.Session = _fastapi.Depends(_services.get_db),
+# ):
+#     return 'hi'
+
+# @app.get("/psql/health") #async
+# def root(db: Session = _fastapi.Depends(_services.get_db)):
+#     ### INACTIVE ENDPOINT ####
+#     print('hi')
+#     pass
+
+@app.get("/psql/h")
+def get_data():
+    db = SessionLocal()
+    # user = db.query(User).filter(User.id == user_id).first()
+    # stmt = select([tpsqltable.c.name])
+    # result = conn.execute(stmt)
+    sql = "select * from tpsqltable"
+    df = pd.read_sql(sql, con=engine)
+    json_data = json.dumps(json.loads(df.to_json(orient="records")))
+    db.close()
+    return {json_data}
+
+# @app.get("/pl") # posttgres local
+# def read_root():
+#     # health of postgresql url, done port mapping
+#     print('checking postgres health')
 
 
 

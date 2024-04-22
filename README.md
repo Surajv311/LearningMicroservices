@@ -13,7 +13,8 @@ touch main.py
 pip install fastapi requests\
 pip install "uvicorn[standard]"\
 
-sed command: uvicorn app2:app --port 8001 --reload for port 8001, similar app1 file for port 8000
+used command: uvicorn app2:app --port 8001 --reload 
+for port 8001, similar app1 file for port 8000: uvicorn app1:app --port 8000 --reload 
 docker run --name redislocal -p 7001:6379 redis 
 docker exec -it redislocal redis-cli # inside the container 
 127.0.0.1:6379> set name "suraj"
@@ -68,11 +69,12 @@ docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTG
 docker ps
 
 docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
-psql -U postgres
+root@e4fb5a81ca46:/# psql -U postgres
 postgres-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
 postgres-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
 postgres-# grant all privileges on database fapidb to postgresdluser;
-postgres=# \c fapidb (to connect to our database)
+postgres-# grant all privileges on table tpsqltable to postgresdluser;
+postgres=# \c fapidb postgresdluser (to connect to our database with the given user)
 (for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
 fapidb-# \dt (to list down all tables)
 fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL);
@@ -86,6 +88,8 @@ fapidb=# select * from tpsqltable;
 
 
 pip install SQLAlchemy psycopg2-binary
+pip install pydantic pandas
+
 
 
 
