@@ -13,6 +13,9 @@ touch main.py
 pip install fastapi requests\
 pip install "uvicorn[standard]"\
 
+pip install SQLAlchemy psycopg2-binary
+pip install pydantic pandas
+
 used command: uvicorn app2:app --port 8001 --reload 
 for port 8001, similar app1 file for port 8000: uvicorn app1:app --port 8000 --reload 
 docker run --name redislocal -p 7001:6379 redis 
@@ -95,10 +98,13 @@ postgres=# \du
  postgresdluser      | 
  postgresdockerlocal | 
 
-to grant privileges to postgresdluser used: 
+to grant privileges to postgresdluser (because same user I am using in code to access the database and tables) used: 
 
-pip install SQLAlchemy psycopg2-binary
-pip install pydantic pandas
+
+
+
+
+
 
 
 
