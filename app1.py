@@ -123,10 +123,10 @@ async def get_status_of_all():
     results = str(results)
     return results
 
-### Next todo: 
+### Next todo:
 ## apache becnhmark , k6 load testing tool - use these 2 load testing tools, apache jmeter. locust.
 # 1 million records in postgtres - write script for it to insert there - and then query with say phone no. or any other and see the difference between synchronous and async call.
-
+# https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
 
 
 
