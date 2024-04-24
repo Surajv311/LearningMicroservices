@@ -11,6 +11,7 @@ import services as _services
 import pandas as pd
 from sqlalchemy import *
 from database import DATABASE_URL, engine, SessionLocal, Base
+import asyncio
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -108,15 +109,19 @@ async def postgresfun():
     return {json_data}
 
 @app.get("/hasync")
-def get_status_of_all():
+async def get_status_of_all():
     url1 = 'http://127.0.0.1:8000/postgres'
     url2 = 'http://127.0.0.1:8000/redis'
-    response1 = requests.get(url1)
-    response2 = requests.get(url2)
-    print(f"Pinging both redis and postgres")
-    data1 = str(json.loads(response1.text))
-    data2 = str(json.loads(response2.text))
-    return data1+data2
+    # response1 = requests.get(url1)
+    # response2 = requests.get(url2)
+    # print(f"Pinging both redis and postgres")
+    # data1 = str(json.loads(response1.text))
+    # data2 = str(json.loads(response2.text))
+    # return data1+data2
+
+    results = await asyncio.gather(*[postgresfun(), redisfun()])
+    results = str(results)
+    return results
 
 
 ########################################################################
