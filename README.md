@@ -173,7 +173,7 @@ https://stackoverflow.com/questions/63044935/flask-sqlalchemy-postgres-error-cou
 https://stackoverflow.com/questions/39257147/convert-pandas-dataframe-to-json-format
 https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-fast-api-from-installation-to-integration-825f875f9f7d
 https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
-
+reference to use async await in api: https://stackoverflow.com/questions/68733675/can-i-use-await-on-multiple-functions-at-once
 
 
 
