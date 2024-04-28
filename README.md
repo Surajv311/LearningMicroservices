@@ -112,6 +112,7 @@ podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTG
 
 
 brew install k6 - to do load testing of api
+after writing k6 test code - in terminal - k6 run loadtest.js
 pip3 install locust
 
 
