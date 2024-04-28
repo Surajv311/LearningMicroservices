@@ -72,36 +72,47 @@ docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTG
 docker ps
 
 docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
-root@e4fb5a81ca46:/# psql -U postgres
-postgres-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
-postgres-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
-postgres-# grant all privileges on database fapidb to postgresdluser;
-postgres=# \c fapidb (to connect to our database)
-
-######## postgres=# \c fapidb postgresdluser (to connect to our database with the given user) ########
-
-(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also follwed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
+root@e4fb5a81ca46:/# psql -U postgresdockerlocal
+postgresdockerlocal-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
+postgresdockerlocal-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
+## Note: I have observed in postgresql docker container after executing command, execute it 2-3 times as the shell seems to be not listening very well. Also, sometimes, it doesn't sync well, so better exit the container and enter again for changes to work
+postgresdockerlocal=# \du
+List of roles
+      Role name      |                         Attributes                         
+---------------------+------------------------------------------------------------
+ postgresdluser      | 
+ postgresdockerlocal | Superuser, Create role, Create DB, Replication, Bypass RLS
+postgresdockerlocal-# grant all privileges on database fapidb to postgresdluser;
+postgresdockerlocal=# GRANT CONNECT ON DATABASE fapidb TO postgresdluser;
+(to grant privileges to postgresdluser (because same user I am using in code to access the database and tables) used:)
+postgresdockerlocal=# GRANT pg_read_all_data TO postgresdluser;
+postgresdockerlocal=# GRANT pg_write_all_data TO postgresdluser;
+postgresdockerlocal=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluser;
+postgresdockerlocal=# GRANT USAGE ON SCHEMA public TO postgresdluser;
+postgresdockerlocal=# GRANT ALL ON SCHEMA public TO postgresdluser;
+postgresdockerlocal=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgresdluser;
+postgresdockerlocal=# \c fapidb postgresdluser (to connect to our database with the given user) ### To connect to database with superuser: postgresdockerlocal=# \c fapidb
+(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also followed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
 fapidb-# \dt (to list down all tables)
-fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL);
-fapidb=# INSERT INTO tpsqltable VALUES (1, 'suraj', 'test');
+fapidb=> SELECT current_user;
+fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL, PHONE INT NOT NULL);
+fapidb=# INSERT INTO tpsqltable VALUES (1, 'suraj', 'test', 12345);
 fapidb=# select * from tpsqltable;
  id | name  | type 
 ----+-------+------
   1 | suraj | test
 (1 row)
 
-postgres=# \du
-                                  List of roles
-      Role name      |                         Attributes                         
----------------------+------------------------------------------------------------
- postgres            | Superuser, Create role, Create DB, Replication, Bypass RLS
- postgresdluser      | 
- postgresdockerlocal | 
 
-to grant privileges to postgresdluser (because same user I am using in code to access the database and tables) used: 
-postgres=# GRANT pg_read_all_data TO postgresdluser;
-postgres=# GRANT pg_write_all_data TO postgresdluser;
-postgres=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluser;
+## setting up podman as in docker removed from laptop - company...
+installed podman desktop, later docs: https://podman.io/docs/installation
+for all docker commands, just replace with keyword podman, eg: 
+podman run --name redislocal -p 7001:6379 redis
+podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres
+
+
+brew install k6 - to do load testing of api
+pip3 install locust
 
 
 
@@ -115,9 +126,9 @@ postgres=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluser;
 
 
 
+------------------------------------
 
-
-
+References/ Other notes: 
 
 https://dbeaver.io/ - dbeaver to see postgres gui
 
@@ -135,15 +146,6 @@ class User(BaseModel):
 user = User(id='123')
 assert user.id == 123
 assert isinstance(user.id, int)
-
-
-
-
-
-
-
-
-
 
 
 https://stackoverflow.com/questions/12857604/python-how-to-check-if-redis-server-is-available
@@ -164,8 +166,6 @@ https://www.youtube.com/watch?v=d_ugoWsvGLI
 https://fastapi.tiangolo.com/async/
 https://www.youtube.com/watch?v=2X8B_X2c27Q
 
-
-
 https://stackoverflow.com/questions/22483555/postgresql-give-all-permissions-to-a-user-on-a-postgresql-database
 https://stackoverflow.com/questions/50180667/how-can-i-connect-to-a-database-as-another-user
 https://stackoverflow.com/questions/60138692/sqlalchemy-psycopg2-errors-insufficientprivilege-permission-denied-for-relation
@@ -174,13 +174,11 @@ https://stackoverflow.com/questions/39257147/convert-pandas-dataframe-to-json-fo
 https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-fast-api-from-installation-to-integration-825f875f9f7d
 https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
 reference to use async await in api: https://stackoverflow.com/questions/68733675/can-i-use-await-on-multiple-functions-at-once
+https://grafana.com/docs/k6/latest/set-up/fine-tune-os/
 
 
 
 
 
-
-
-
-
+------------------------------------
 
