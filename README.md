@@ -76,7 +76,7 @@ root@e4fb5a81ca46:/# psql -U postgresdockerlocal
 postgresdockerlocal-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
 postgresdockerlocal-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
 ## Note: I have observed in postgresql docker container after executing command, execute it 2-3 times as the shell seems to be not listening very well. Also, sometimes, it doesn't sync well, so better exit the container and enter again for changes to work
-postgresdockerlocal=# \du
+postgresdockerlocal=# \du ## Note that \q will exit session
 List of roles
       Role name      |                         Attributes                         
 ---------------------+------------------------------------------------------------
