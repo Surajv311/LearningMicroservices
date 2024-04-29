@@ -6,6 +6,18 @@ import http from 'k6/http';
 import { check } from 'k6';
 
 export const options = {
+// Case 1:
+//vus: 10,
+//duration: 10s,
+
+// Case 2:
+vus: 100,
+stages: [
+    { duration: '30s', target: 100 }, // ramp up
+    { duration: '30s', target: 100 }, // stable
+    { duration: '1m', target: 1000 }, // spike - stress test
+    { duration: '1m', target: 0 }, // ramp down
+  ],
   thresholds: {
     // 90% of requests must finish within 500ms.
 //    http_req_duration: ['p(90) < 500'],
@@ -17,7 +29,7 @@ export const options = {
 };
 
 export default function () {
-  http.get('http://127.0.0.1:8000/hasync');
+  let res = http.get('http://127.0.0.1:8000/hasync');
   check(res, {
     'api status in load test is 200': (r) => r.status === 200,
   });

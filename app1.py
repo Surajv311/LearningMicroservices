@@ -99,6 +99,7 @@ async def redisfun():
         return "working"
     else:
         return "not working"
+
 @app.get("/postgres")
 async def postgresfun():
     db = SessionLocal()
@@ -110,18 +111,19 @@ async def postgresfun():
 
 @app.get("/hasync")
 async def get_status_of_all():
+    ## synchronous code
     url1 = 'http://127.0.0.1:8000/postgres'
     url2 = 'http://127.0.0.1:8000/redis'
-    # response1 = requests.get(url1)
-    # response2 = requests.get(url2)
-    # print(f"Pinging both redis and postgres")
-    # data1 = str(json.loads(response1.text))
-    # data2 = str(json.loads(response2.text))
-    # return data1+data2
-
-    results = await asyncio.gather(*[postgresfun(), redisfun()])
-    results = str(results)
-    return results
+    response1 = requests.get(url1)
+    response2 = requests.get(url2)
+    print(f"Pinging both redis and postgres")
+    data1 = str(json.loads(response1.text))
+    data2 = str(json.loads(response2.text))
+    return data1+data2
+    ## async code
+    # results = await asyncio.gather(*[postgresfun(), redisfun()])
+    # results = str(results)
+    # return results
 
 ### Next todo:
 ## apache becnhmark , k6 load testing tool - use these 2 load testing tools, apache jmeter. locust.

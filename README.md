@@ -114,6 +114,35 @@ podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTG
 
 brew install k6 - to do load testing of api
 after writing k6 test code - in terminal - k6 run loadtest.js
+first, i let async code run, results:
+     checks.........................: 100.00% ✓ 19474      ✗ 0     
+     data_received..................: 4.2 MB  116 kB/s
+     data_sent......................: 1.7 MB  47 kB/s
+     http_req_blocked...............: avg=15.33µs  min=0s      med=1µs      max=3.74ms p(90)=1µs      p(95)=2µs     
+     http_req_connecting............: avg=14.08µs  min=0s      med=0s       max=3.19ms p(90)=0s       p(95)=0s      
+     http_req_duration..............: avg=185.55ms min=14.04ms med=175.95ms max=2.35s  p(90)=203.18ms p(95)=216.06ms
+       { expected_response:true }...: avg=185.55ms min=14.04ms med=175.95ms max=2.35s  p(90)=203.18ms p(95)=216.06ms
+     http_req_failed................: 0.00%   ✓ 0          ✗ 19474 
+     http_req_receiving.............: avg=14.73µs  min=4µs     med=9µs      max=2.92ms p(90)=29µs     p(95)=37µs    
+     http_req_sending...............: avg=3.81µs   min=1µs     med=3µs      max=2.75ms p(90)=6µs      p(95)=7µs     
+     http_req_tls_handshaking.......: avg=0s       min=0s      med=0s       max=0s     p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=185.53ms min=14.01ms med=175.94ms max=2.35s  p(90)=203.16ms p(95)=216.05ms
+     http_reqs......................: 19474   537.545307/s
+     iteration_duration.............: avg=185.61ms min=14.1ms  med=175.99ms max=2.35s  p(90)=203.23ms p(95)=216.09ms
+     iterations.....................: 19474   537.545307/s
+     vus............................: 100     min=100      max=100 
+     vus_max........................: 1000    min=1000     max=1000
+
+After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond.
+Thinking what to do next, port 8001, is working and thinking to try that - but want to understand how to make port 8000 up again 
+
+Later ran stress testing of sync code, results: 
+
+
+
+
+
+
 pip3 install locust
 
 
