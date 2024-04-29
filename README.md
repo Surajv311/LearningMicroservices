@@ -91,6 +91,7 @@ postgresdockerlocal=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluse
 postgresdockerlocal=# GRANT USAGE ON SCHEMA public TO postgresdluser;
 postgresdockerlocal=# GRANT ALL ON SCHEMA public TO postgresdluser;
 postgresdockerlocal=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgresdluser;
+postgresdockerlocal=# ALTER DATABASE fapidb OWNER TO postgresdluser; ## as above changes were not working, despite my new user, it was not getting access/privileges, hence changed the db owner
 postgresdockerlocal=# \c fapidb postgresdluser (to connect to our database with the given user) ### To connect to database with superuser: postgresdockerlocal=# \c fapidb
 (for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also followed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
 fapidb-# \dt (to list down all tables)
@@ -98,9 +99,9 @@ fapidb=> SELECT current_user;
 fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL, PHONE INT NOT NULL);
 fapidb=# INSERT INTO tpsqltable VALUES (1, 'suraj', 'test', 12345);
 fapidb=# select * from tpsqltable;
- id | name  | type 
-----+-------+------
-  1 | suraj | test
+ id | name  | type | phone 
+----+-------+------+-------
+  1 | suraj | test | 12345
 (1 row)
 
 
