@@ -130,6 +130,8 @@ async def get_status_of_all():
 # 1 million records in postgtres - write script for it to insert there - and then query with say phone no. or any other and see the difference between synchronous and async call.
 # https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
 
+# also check individual endpoints of redis and postgres, restart them see where actually your API is timing out now, or see if you need to restart gunicorn server, etc
+# start with ab -> k6, check once in go as well, also insert 1M records, and tweak your sql query in postgres and redis and then fetch data...and see where it takes time
 
 
 ########################################################################
