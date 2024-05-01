@@ -136,6 +136,10 @@ first, i let async code run, results:
 After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond.
 Thinking what to do next, port 8001, is working and thinking to try that - but want to understand how to make port 8000 up again 
 
+So planning to restart containers as API is down post stress testing. 
+First seeing running containers: podman ps (since docker removed from our systems by admin, instead of docker ps, using podman ps)
+even after restarting redis/postgres container and restarting the fast api app on the port 8000, still application is down post stress testing, and normal health check APIs are not responding for all. If I run app on different port, its fine, but same port, seems some issue.  
+
 Later ran stress testing of sync code, results: 
 
 
