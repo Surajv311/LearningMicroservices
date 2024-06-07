@@ -111,9 +111,14 @@ for all docker commands, just replace with keyword podman, eg:
 podman run --name redislocal -p 7001:6379 redis
 podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres
 
+podman exec -it redislocal redis-cli        
+podman exec -it postgreslocal bash
 
 brew install k6 - to do load testing of api
 after writing k6 test code - in terminal - k6 run loadtest.js
+configuration in loadtest.js
+
+
 first, i let async code run, results:
      checks.........................: 100.00% ✓ 19474      ✗ 0     
      data_received..................: 4.2 MB  116 kB/s
@@ -138,7 +143,11 @@ Thinking what to do next, port 8001, is working and thinking to try that - but w
 
 So planning to restart containers as API is down post stress testing. 
 First seeing running containers: podman ps (since docker removed from our systems by admin, instead of docker ps, using podman ps)
-even after restarting redis/postgres container and restarting the fast api app on the port 8000, still application is down post stress testing, and normal health check APIs are not responding for all. If I run app on different port, its fine, but same port, seems some issue.  
+even after restarting redis/postgres container and restarting the fast api app on the port 8000, still application is down post stress testing, and normal health check APIs are not responding for all. If I run app on different port, its fine, but same port, seems some issue.
+Update: Now able to restart servers - I killed the process pid. To do so, first listed all services using the port using: 
+`lsof -i :8000`. 
+Then killed them using: `kill -9 <pid>` - kill pid (which sends signal 15 (SIGTERM)) tells pid to terminate, but said program can execute some code first or even ignore the signal. kill -9 pid, on the other hand, forces the program to immediately terminate (it cannot be ignored).
+And then restarted the services using uvicorn
 
 Later ran stress testing of sync code, results: 
 
@@ -210,7 +219,8 @@ https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-f
 https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
 reference to use async await in api: https://stackoverflow.com/questions/68733675/can-i-use-await-on-multiple-functions-at-once
 https://grafana.com/docs/k6/latest/set-up/fine-tune-os/
-
+https://askubuntu.com/questions/791841/difference-kill-9-pid-and-kill-pid-command
+https://stackoverflow.com/questions/19071512/socket-error-errno-48-address-already-in-use
 
 
 
