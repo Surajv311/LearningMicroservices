@@ -13,9 +13,9 @@ export const options = {
 // Case 2:
 vus: 100,
 stages: [
-    { duration: '30s', target: 100 }, // ramp up
-    { duration: '30s', target: 100 }, // stable
-    { duration: '1m', target: 1000 }, // spike - stress test
+    { duration: '15s', target: 100 }, // ramp up
+    { duration: '15s', target: 100 }, // stable
+    { duration: '45s', target: 1000 }, // spike - stress test
     { duration: '1m', target: 0 }, // ramp down
   ],
   thresholds: {
@@ -29,7 +29,12 @@ stages: [
 };
 
 export default function () {
+// let allows for declaring block-scoped variables. You cannot use let to redeclare a variable, whereas you can with var in js.
+// for async endpoint
   let res = http.get('http://127.0.0.1:8000/hasync');
+// for sync endpoint
+//  let res = http.get('http://127.0.0.1:8000/hsync');
+
   check(res, {
     'api status in load test is 200': (r) => r.status === 200,
   });

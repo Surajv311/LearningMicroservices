@@ -79,7 +79,7 @@ def get_data():
     # user = db.query(User).filter(User.id == user_id).first()
     # stmt = select([tpsqltable.c.name])
     # result = conn.execute(stmt)
-    sql = "select * from tpsqltable"
+    sql = "select * from tpsqltable limit 10"
     df = pd.read_sql(sql, con=engine)
     json_data = json.dumps(json.loads(df.to_json(orient="records")))
     db.close()
@@ -92,6 +92,7 @@ def get_data():
 
 ########################################################################
 
+#async
 @app.get("/redis")  # redis local
 async def redisfun():
     x = rd.ping()
@@ -103,7 +104,7 @@ async def redisfun():
 @app.get("/postgres")
 async def postgresfun():
     db = SessionLocal()
-    sql = "select * from tpsqltable"
+    sql = "select * from tpsqltable limit 10"
     df = pd.read_sql(sql, con=engine)
     json_data = json.dumps(json.loads(df.to_json(orient="records")))
     db.close()
@@ -111,40 +112,75 @@ async def postgresfun():
 
 @app.get("/hasync")
 async def get_status_of_all():
+    ## async code
+    results = await asyncio.gather(*[postgresfun(), redisfun()])
+    results = str(results)
+    return results
+
+"""
+Observation: If I define another route with same function but different output, earlier one gets executed, not this one, why??
+@app.get("/hasync")
+async def get_status_of_all():
+    return {"hello"}
+
+If I do this, it I think gave internal server error... 
+@app.get("/hasync")
+def get_status_of_all():
+    return {"hello"}
+
+"""
+
+##################################################################
+
+#sync
+@app.get("/sredis")  # redis local
+def syncredisfun():
+    x = rd.ping()
+    if x is not None:
+        return "working"
+    else:
+        return "not working"
+
+@app.get("/spostgres")
+def syncpostgresfun():
+    db = SessionLocal()
+    sql = "select * from tpsqltable limit 10"
+    df = pd.read_sql(sql, con=engine)
+    json_data = json.dumps(json.loads(df.to_json(orient="records")))
+    db.close()
+    return {json_data}
+
+@app.get("/hsync")
+def sync_get_status_of_all():
     ## synchronous code
-    url1 = 'http://127.0.0.1:8000/postgres'
-    url2 = 'http://127.0.0.1:8000/redis'
-    response1 = requests.get(url1)
-    response2 = requests.get(url2)
+    """
+    Note: Understand that, for a given route, underlying function defined should be different
+    """
     print(f"Pinging both redis and postgres")
+    url1 = 'http://127.0.0.1:8000/postgres'
+    response1 = requests.get(url1)
     data1 = str(json.loads(response1.text))
+    url2 = 'http://127.0.0.1:8000/redis'
+    response2 = requests.get(url2)
     data2 = str(json.loads(response2.text))
     return data1+data2
-    ## async code
-    # results = await asyncio.gather(*[postgresfun(), redisfun()])
-    # results = str(results)
-    # return results
-
-### Next todo:
-## apache becnhmark , k6 load testing tool - use these 2 load testing tools, apache jmeter. locust.
-# 1 million records in postgtres - write script for it to insert there - and then query with say phone no. or any other and see the difference between synchronous and async call.
-# https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
-
-# also check individual endpoints of redis and postgres, restart them see where actually your API is timing out now, or see if you need to restart gunicorn server, etc
-# start with ab -> k6, check once in go as well, also insert 1M records, and tweak your sql query in postgres and redis and then fetch data...and see where it takes time
-
-
-########################################################################
 
 
 
+##################################################################
+### Next todo in project:
+#
+#
+#
+#
+#
+##################################################################
 
 
 
 # @app.get("/items/{item_id}")
 # def read_item(item_id: int, q: Union[str, None] = None):
 #     return {"item_id": item_id, "q": q}
-
 
 # @app.put("/items/{item_id}")
 # def update_item(item_id: int, item: Item):

@@ -116,27 +116,40 @@ podman exec -it postgreslocal bash
 
 brew install k6 - to do load testing of api
 after writing k6 test code - in terminal - k6 run loadtest.js
-configuration in loadtest.js
-
+configuration in loadtest.js (commented below - in readme also we can add comments)
+[//]: # (vus: 100,)
+[//]: # (stages: [)
+[//]: # (    { duration: '15s', target: 100 }, // ramp up)
+[//]: # (    { duration: '15s', target: 100 }, // stable)
+[//]: # (    { duration: '45s', target: 1000 }, // spike - stress test)
+[//]: # (    { duration: '1m', target: 0 }, // ramp down)
+[//]: # (  ])
 
 first, i let async code run, results:
-     checks.........................: 100.00% ✓ 19474      ✗ 0     
-     data_received..................: 4.2 MB  116 kB/s
-     data_sent......................: 1.7 MB  47 kB/s
-     http_req_blocked...............: avg=15.33µs  min=0s      med=1µs      max=3.74ms p(90)=1µs      p(95)=2µs     
-     http_req_connecting............: avg=14.08µs  min=0s      med=0s       max=3.19ms p(90)=0s       p(95)=0s      
-     http_req_duration..............: avg=185.55ms min=14.04ms med=175.95ms max=2.35s  p(90)=203.18ms p(95)=216.06ms
-       { expected_response:true }...: avg=185.55ms min=14.04ms med=175.95ms max=2.35s  p(90)=203.18ms p(95)=216.06ms
-     http_req_failed................: 0.00%   ✓ 0          ✗ 19474 
-     http_req_receiving.............: avg=14.73µs  min=4µs     med=9µs      max=2.92ms p(90)=29µs     p(95)=37µs    
-     http_req_sending...............: avg=3.81µs   min=1µs     med=3µs      max=2.75ms p(90)=6µs      p(95)=7µs     
-     http_req_tls_handshaking.......: avg=0s       min=0s      med=0s       max=0s     p(90)=0s       p(95)=0s      
-     http_req_waiting...............: avg=185.53ms min=14.01ms med=175.94ms max=2.35s  p(90)=203.16ms p(95)=216.05ms
-     http_reqs......................: 19474   537.545307/s
-     iteration_duration.............: avg=185.61ms min=14.1ms  med=175.99ms max=2.35s  p(90)=203.23ms p(95)=216.09ms
-     iterations.....................: 19474   537.545307/s
-     vus............................: 100     min=100      max=100 
-     vus_max........................: 1000    min=1000     max=1000
+
+     scenarios: (100.00%) 1 scenario, 1000 max VUs, 2m45s max duration (incl. graceful stop):
+              * default: Up to 1000 looping VUs for 2m15s over 4 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+     ✗ api status in load test is 200
+      ↳  96% — ✓ 30984 / ✗ 989
+     checks.........................: 96.90% ✓ 30984      ✗ 989   
+     data_received..................: 6.7 MB 50 kB/s
+     data_sent......................: 2.7 MB 20 kB/s
+     http_req_blocked...............: avg=65.84ms min=0s     med=1µs      max=19.51s p(90)=2µs   p(95)=4µs  
+     http_req_connecting............: avg=65.83ms min=0s     med=0s       max=19.51s p(90)=0s    p(95)=0s   
+     http_req_duration..............: avg=1.26s   min=0s     med=823.22ms max=40.57s p(90)=1.78s p(95)=1.97s
+       { expected_response:true }...: avg=1.3s    min=6.13ms med=845.72ms max=40.57s p(90)=1.78s p(95)=1.97s
+     http_req_failed................: 3.09%  ✓ 989        ✗ 30984 
+     http_req_receiving.............: avg=24.95µs min=0s     med=12µs     max=9.57ms p(90)=37µs  p(95)=58µs 
+     http_req_sending...............: avg=7.61µs  min=0s     med=4µs      max=3.41ms p(90)=10µs  p(95)=16µs 
+     http_req_tls_handshaking.......: avg=0s      min=0s     med=0s       max=0s     p(90)=0s    p(95)=0s   
+     http_req_waiting...............: avg=1.26s   min=0s     med=823.22ms max=40.57s p(90)=1.78s p(95)=1.97s
+     http_reqs......................: 31973  236.824871/s
+     iteration_duration.............: avg=2.05s   min=1.68ms med=867.31ms max=54.89s p(90)=1.88s p(95)=2.23s
+     iterations.....................: 31973  236.824871/s
+     vus............................: 1      min=1        max=999 
+     vus_max........................: 1000   min=1000     max=1000
+    running (2m15.0s), 0000/1000 VUs, 31973 complete and 46 interrupted iterations
+
 
 After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond.
 Thinking what to do next, port 8001, is working and thinking to try that - but want to understand how to make port 8000 up again 
@@ -151,18 +164,197 @@ And then restarted the services using uvicorn
 
 Later ran stress testing of sync code, results: 
 
+     scenarios: (100.00%) 1 scenario, 1000 max VUs, 2m45s max duration (incl. graceful stop):
+              * default: Up to 1000 looping VUs for 2m15s over 4 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+     ✗ api status in load test is 200
+      ↳  99% — ✓ 17680 / ✗ 29
+     checks.........................: 99.83% ✓ 17680      ✗ 29    
+     data_received..................: 3.7 MB 26 kB/s
+     data_sent......................: 1.5 MB 11 kB/s
+     http_req_blocked...............: avg=184.17µs min=0s       med=1µs   max=96.35ms p(90)=3µs   p(95)=171µs
+     http_req_connecting............: avg=179.28µs min=0s       med=0s    max=96.26ms p(90)=0s    p(95)=127µs
+     http_req_duration..............: avg=3.62s    min=212.27ms med=3.6s  max=33.22s  p(90)=6.35s p(95)=6.7s 
+       { expected_response:true }...: avg=3.58s    min=212.27ms med=3.59s max=32.51s  p(90)=6.34s p(95)=6.69s
+     http_req_failed................: 0.16%  ✓ 29         ✗ 17680 
+     http_req_receiving.............: avg=35.98µs  min=7µs      med=30µs  max=6.08ms  p(90)=52µs  p(95)=64µs 
+     http_req_sending...............: avg=11.77µs  min=2µs      med=9µs   max=3.23ms  p(90)=17µs  p(95)=26µs 
+     http_req_tls_handshaking.......: avg=0s       min=0s       med=0s    max=0s      p(90)=0s    p(95)=0s   
+     http_req_waiting...............: avg=3.62s    min=212.11ms med=3.6s  max=33.22s  p(90)=6.35s p(95)=6.7s 
+     http_reqs......................: 17709  125.664217/s
+     iteration_duration.............: avg=3.62s    min=218.01ms med=3.6s  max=33.22s  p(90)=6.35s p(95)=6.7s 
+     iterations.....................: 17709  125.664217/s
+     vus............................: 2      min=2        max=1000
+     vus_max........................: 1000   min=1000     max=1000
+    running (2m20.9s), 0000/1000 VUs, 17709 complete and 0 interrupted iterations
+
+Hence as we see, for sync - avg response time: avg=3.62s with less failed responses, 
+and async code time is: avg=1.26s, with relatively more failed responses, so its about the tradeoff we make
+Later again killed the pids and restarted the servers
+
+Now, did load testing with ab: 
+simple command in terminal: ab -k -c 10 -n 50 http://127.0.0.1:8000/hasync
+it means - you will be hitting http://127.0.0.1:8000/hasync with 10 simultaneous connections until 50 requests are met. It will be done using the keep alive header. After the process finishes the 20 thousand requests, you will receive feedback on stats.
+"""
+Note on issuing this command, I got: 
+(base) ➜  ~ ab -k -c 750 -n 30000 http://127.0.0.1:8000/hasync
+Benchmarking 127.0.0.1 (be patient)
+socket: Too many open files (24)
+Hence seems there is some limit till which I can hit... so reducing the values 
+"""
 
 
+Command used for async code and stats: ab -k -c 350 -n 30000 http://127.0.0.1:8000/hasync
+Server Software:        uvicorn
+Server Hostname:        127.0.0.1
+Server Port:            8000
+Document Path:          /hasync
+Document Length:        91 bytes
+Concurrency Level:      100
+Time taken for tests:   293.477 seconds
+Complete requests:      30000
+Failed requests:        0
+Keep-Alive requests:    0
+Total transferred:      6480000 bytes
+HTML transferred:       2730000 bytes
+Requests per second:    102.22 [#/sec] (mean)
+Time per request:       978.258 [ms] (mean)
+Time per request:       9.783 [ms] (mean, across all concurrent requests)
+Transfer rate:          21.56 [Kbytes/sec] received
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.4      0      26
+Processing:    31  976 192.8    992    1426
+Waiting:       28  967 191.7    982    1416
+Total:         35  976 192.8    992    1427
+Percentage of the requests served within a certain time (ms)
+  50%    992
+  66%   1082
+  75%   1124
+  80%   1146
+  90%   1211
+  95%   1259
+  98%   1302
+  99%   1327
+ 100%   1427 (longest request)
 
+Command used for sync code and stats: ab -k -c 750 -n 30000 http://127.0.0.1:8000/hsync
+Server Software:        uvicorn
+Server Hostname:        127.0.0.1
+Server Port:            8000
+Document Path:          /hsync
+Document Length:        85 bytes
+Concurrency Level:      100
+Time taken for tests:   181.606 seconds
+Complete requests:      30000
+Failed requests:        0
+Keep-Alive requests:    0
+Total transferred:      6300000 bytes
+HTML transferred:       2550000 bytes
+Requests per second:    165.19 [#/sec] (mean)
+Time per request:       605.353 [ms] (mean)
+Time per request:       6.054 [ms] (mean, across all concurrent requests)
+Transfer rate:          33.88 [Kbytes/sec] received
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2  46.9      0    1908
+Processing:    51  602 149.3    591    2485
+Waiting:       47  602 149.3    591    2485
+Total:         52  605 156.6    592    2788
+Percentage of the requests served within a certain time (ms)
+  50%    592
+  66%    650
+  75%    688
+  80%    711
+  90%    767
+  95%    824
+  98%    922
+  99%   1038
+ 100%   2788 (longest request)
 
+Why did sync take less time than async??? Check... 
 
-pip3 install locust
+Apart from k6, ab, we can also use jmeter, locust tools for load testing
 
+Next part of project is to insert over 1M or more records in postgres,
+I logged into my fapidb from previous commands (postgresdockerlocal=# \c fapidb postgresdluser), 
+we know that usual way is: INSERT INTO tpsqltable VALUES (2, 'ram', 'test2', 54322);
+But since 1M so checked stackoverflow and below command helped: 
+First, I did few things: 
+fapidb=> truncate tpsqltable;
+fapidb=> alter table tpsqltable add address varchar(300);
+fapidb=> CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL, PHONE INT NOT NULL);
+fapidb=> ALTER TABLE tpsqltable ADD COLUMN created_at TIMESTAMP;
+fapidb=> \d+ tpsqltable
+                                                    Table "public.tpsqltable"
+   Column   |            Type             | Collation | Nullable | Default | Storage  | Compression | Stats target | Description 
+------------+-----------------------------+-----------+----------+---------+----------+-------------+--------------+-------------
+ id         | integer                     |           | not null |         | plain    |             |              | 
+ name       | text                        |           | not null |         | extended |             |              | 
+ type       | text                        |           | not null |         | extended |             |              | 
+ phone      | integer                     |           | not null |         | plain    |             |              | 
+ address    | character varying(300)      |           |          |         | extended |             |              | 
+ created_at | timestamp without time zone |           |          |         | plain    |             |              | 
+Indexes:
+    "tpsqltable_pkey" PRIMARY KEY, btree (id)
+Access method: heap
+fapidb=> alter table tpsqltable alter column phone type bigint;
 
+Now, time to insert 1M records:
+INSERT INTO tpsqltable (id, name, type, phone, address, created_at)
+SELECT
+    s AS id, 
+    'name_' || s AS name,
+    CASE WHEN s % 3 = 0 THEN 'type1'
+         WHEN s % 3 = 1 THEN 'type2'
+         ELSE 'type3'
+    END AS type,
+    (CASE WHEN random() < 0.5 THEN 8000000000 ELSE 9000000000 END + s % 1000000) AS phone,
+    'address data ' || s AS address,
+    '2000-01-01'::timestamp + (s % 3650 || ' days')::interval AS created_at
+FROM generate_series(1, 5000000) AS s;
 
+Now, shuffling all the records:
+-- Step 1: Create a new table with shuffled rows
+CREATE TABLE shuffled_table AS
+SELECT * FROM tpsqltable
+ORDER BY random();
+-- Step 2: Drop the original table
+DROP TABLE tpsqltable;
+-- Step 3: Rename the shuffled table to the original table name
+ALTER TABLE shuffled_table RENAME TO tpsqltable;
 
+Now I run a few queries to understand query performance (Query Plan): 
 
+------------------------------------------------------------------------------
+fapidb=> explain select * from tpsqltable where phone=9000516507;
 
+ Gather  (cost=1000.00..83875.96 rows=3 width=66)
+   Workers Planned: 2
+   ->  Parallel Seq Scan on tpsqltable  (cost=0.00..82875.66 rows=1 width=66)
+         Filter: (phone = '9000516507'::bigint)
+(4 rows)
+------------------------------------------------------------------------------
+
+----------------------------------------------------------------------
+fapidb=> explain select * from tpsqltable;
+
+ Seq Scan on tpsqltable  (cost=0.00..106835.82 rows=5000382 width=66)
+(1 row)
+------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------
+fapidb=> explain select * from tpsqltable order by created_at;
+
+ Gather Merge  (cost=468247.39..954429.47 rows=4166984 width=66)
+   Workers Planned: 2
+   ->  Sort  (cost=467247.37..472456.10 rows=2083492 width=66)
+         Sort Key: created_at
+         ->  Parallel Seq Scan on tpsqltable  (cost=0.00..77666.93 rows=2083492 width=66)
+(5 rows)
+------------------------------------------------------------------------------
+
+Now, I go to my app1.py and try retrieving the records based on a phone number via sync and async way
+modifications made...also load test??
 
 
 
@@ -221,8 +413,13 @@ reference to use async await in api: https://stackoverflow.com/questions/6873367
 https://grafana.com/docs/k6/latest/set-up/fine-tune-os/
 https://askubuntu.com/questions/791841/difference-kill-9-pid-and-kill-pid-command
 https://stackoverflow.com/questions/19071512/socket-error-errno-48-address-already-in-use
-
-
+https://stackoverflow.com/questions/12732182/ab-load-testing
+https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
+https://www.youtube.com/watch?v=gvounvDSDGg
+https://www.youtube.com/watch?v=ghuo8m7AXEM&t=217s
+https://stackoverflow.com/questions/59169855/inserting-1-million-random-data-into-postgresql
+order by random() works but ~ https://dba.stackexchange.com/questions/261549/order-by-random-meaning-postgresql
+https://www.youtube.com/watch?v=P7EUFtjeAmI
 
 
 ------------------------------------
