@@ -1,14 +1,19 @@
 ## Project Overview
+
+Note: Do consider skipping below overviews of project and jump to steps followed to flow the way project was developed. 
+
 - Initial intention (rough): 
-  - We must have 2 microservices say: `runningMicroservice` and `consumerMicroservice`. 
+  - We must have 2 microservices say: `businessMicroservice` and `consumerMicroservice`. 
   - Consider having the following db containers running as well locally: `postgresql`, `redis`, `mongodb`.
-  - `runningMicroservice` should have endpoints which check the health of db containers, query over tables in the db's, and have the ability to perform basic CRUD operations. 
+  - `businessMicroservice` should have endpoints which check the health of db containers, query over tables in the db's, and have the ability to perform basic CRUD operations. 
   - We also intend to play around with ports as well hence we will have cases where we are running the service in 2 different ports and trying to get the status of one port from another, etc; Or running containers on 2 different ports etc. 
-  - `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `runningMicroservice`. In short, allow 2 microservices to communicate with one another. 
+  - `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `businessMicroservice`. In short, allow 2 microservices to communicate with one another. 
+  - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, so kind of act like load balancer.
+
 - Future intention (rough)
   - The complexity of project will increase with time. 
   - We will have more complex scenarios to cover, and probably add end-to-end flow, like say post interaction, publishing data to Kafka/Flink; Or having Debezium setup to capture CDC once we update postgres tables via our microservice, etc etc. 
-  - Objective is to mimic how production systems work as closely as possible. We will try to cover as many cases as possible in time and learn!. 
+  - Objective is to mimic how production systems work as closely as possible. In local if things work well and fine, same is done in cloud - FYI, it's just that some minor tweaks have to be made since ecosystem changes but the core concepts remain the same. We will try to cover as many cases as possible in time and learn!. 
 
 ------------------
 
