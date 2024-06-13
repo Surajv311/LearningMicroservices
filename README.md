@@ -358,6 +358,9 @@ modifications made...also load test??
 
 
 
+redis ping call - and postgres 1+1 call - health check. 
+dynamo paper 
+mongodb integrate... 
 
 
 
