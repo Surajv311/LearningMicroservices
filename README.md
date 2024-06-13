@@ -1,6 +1,6 @@
 ## Project Overview
 
-Note: Do consider skipping below overviews of project and jump to steps followed to flow the way project was developed. 
+Note: Do consider skipping below overviews of project and jump to steps followed in next section to flow the way project was developed. 
 
 - Initial intention (rough): 
   - We must have 2 microservices say: `businessMicroservice` and `consumerMicroservice`. 
