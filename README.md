@@ -19,17 +19,19 @@ Note: Do consider skipping below overviews of project and jump to the steps foll
 
 ### Steps followed (Flow) in project: 
 
+Locally, created a directory called: `fastapiproject/` to have all project files saved. 
 
-
-
-vi ~/.zsh_history
+Necessary installations: 
 
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\
-brew install pyenv\
+brew install pyenv
 pyenv install 3.10.6
 python3
 pyenv versions
 ls
+
+virtual env: 
+
 python3 -m venv fapi
 source ./fapi/bin/activate
 ls
