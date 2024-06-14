@@ -22,46 +22,52 @@ def get_other_server_status():
     return data
 #################################################################################
 # To complete Task2
-@app.get("/redisHealth")
+@app.get("/redisHealth") # Note the endpoint is in camelCase
 def redisHealthFun():
     status = rd.ping() # simply pinging the Redis db
     ## Trying to perform a basic set/get operation
-    if status:
-        rd.set('key', 'hello world')
-        response = rd.get('key')
-        if response:
-            data = response.decode('utf-8') # decoding byter to string, as Redis returns: b'hello world', when I print
-        else:
-            data = "No data"
+    try:
+        if status:
+            rd.set('key', 'hello world')
+            response = rd.get('key')
+            if response:
+                data = response.decode('utf-8') # decoding byter to string, as Redis returns: b'hello world', when I print
+            else:
+                data = "No data - Unable to decode data"
+            return {
+                "Redis status": "Healthy",
+                "Sample Data": data
+            }
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        msg = str(e)
         return {
-            "Redis status": "Healthy",
-            "Sample Data": data
+            "Redis status": f"ERROR - {msg}"
         }
-    else:
-        return {
-            "Redis status": "ERROR; Not working"
-        }
-@app.get("/postgresHealth")
+@app.get("/postgresHealth") # Note the endpoint is in camelCase
 def postgresHealthFun():
     db = SessionLocal()
-    sql_query = f"select 1+1" # A simple query to run on postgres; Yes such query runs in postgres - primarily used for health checks
-    df = pd.read_sql(sql_query, con=engine)
-    status = not df.empty
-    if status:
-        # if status is fine and we get some data, we further query on a table and get one row from it
-        sql = f"select * from {postgres_table} limit 1"
-        df = pd.read_sql(sql, con=engine)
-        json_data = json.dumps(json.loads(df.to_json(orient="records")))
-        db.close()
-        return {
-            "Postgres status": "Healthy",
-            "Sample Data": json_data
-        }
-    else:
-        db.close()
-        return {
-            "Postgres status": "ERROR; Not working"
+    try:
+        sql_query = f"select 1+1" # A simple query to run on postgres; Yes such query runs in postgres - primarily used for health checks
+        df = pd.read_sql(sql_query, con=engine)
+        status = not df.empty
+        if status:
+            # if status is fine and we get some data, we further query on a table and get one row from it
+            sql = f"select * from {postgres_table} limit 1"
+            df = pd.read_sql(sql, con=engine)
+            json_data = json.dumps(json.loads(df.to_json(orient="records")))
+            return {
+                "Postgres status": "Healthy",
+                "Sample Data": json_data
             }
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        msg = str(e)
+        return {
+            "Postgres status": f"ERROR - {msg}"
+        }
+    finally:
+        db.close()
 #################################################################################
 # To complete Task3
 ### Async version
@@ -90,7 +96,7 @@ async def get_async_status_db():
     results = await asyncio.gather(*[postgres_fun_async(), redis_fun_async()])
     results = "Async status of both dbs: " + str(results)
     return results
-### Sync version
+### Sync version - We basically remove async keyword from all, else they exhibit strange behaviour
 @app.get("/syncrhealth")
 def redis_fun_sync():
     "To get redis db health in sync fashion"
@@ -112,7 +118,7 @@ def postgres_fun_sync():
     else:
         return {"Postgres status: ERROR; Not working"}
 @app.get("/syncrpstatus")
-async def get_sync_status_db():
+def get_sync_status_db():
     print(f"Pinging both redis and postgres")
     pg_url = 'http://127.0.0.1:8000/syncphealth'
     response_pg = requests.get(pg_url)
@@ -123,3 +129,68 @@ async def get_sync_status_db():
     final_data = data_pg + data_redis
     return {final_data}
 ##################################################################
+# To complete Task5
+@app.get("/postgresfetch")
+def postgresFetchRecords():
+    db = SessionLocal()
+    try:
+        sql = f"select * from {postgres_table} where phone=9000516507"
+        df = pd.read_sql(sql, con=engine)
+        json_data = json.dumps(json.loads(df.to_json(orient="records")))
+        return {
+            "Data": json_data
+        }
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        msg = str(e)
+        return {
+            "Postgres status": f"ERROR - {msg}"
+        }
+    finally:
+        db.close()
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+##################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
