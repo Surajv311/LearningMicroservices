@@ -21,31 +21,81 @@ Note: Do consider skipping below overviews of project and jump to the steps foll
 
 Locally, created a directory called: `fastapiproject/` to have all project files saved. 
 
-Necessary installations: 
-
+Necessary installations (mac):
+```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\
 brew install pyenv
 pyenv install 3.10.6
 python3
 pyenv versions
-ls
+```
+And do ensure you have `pip` package manager installed and docker/podman installed to run containers. 
+In this exercise, I have used docker in the beginning later switched to podman (Note all docker commands run same in podman, except instead of using docker keyword, use podman)
 
-virtual env: 
+Create 2 folders or virtual environments where we will have our code: 
+`python3 -m venv consumerMicroservice`
+`python3 -m venv businessMicroservice`
 
-python3 -m venv fapi
-source ./fapi/bin/activate
-ls
-touch main.py
-pip install fastapi requests\
-pip install "uvicorn[standard]"\
+Ensure env is clean by checking installed packages:
+`pip list`
 
-pip install SQLAlchemy psycopg2-binary
-pip install pydantic pandas
+We will work around developing `businessMicroservice` so activate the env. We can also activate `consumerMicroservice` though not using it now. 
+Open 2 terminals and `cd` into the directory for business & consumer service and activate the env. 
+In my case: (Eg)
+`cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/consumerMicroservice`
+`source bin/activate`
+`cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`
+`source bin/activate`
 
-used command: uvicorn app2:app --port 8001 --reload 
-for port 8001, similar app1 file for port 8000: uvicorn app1:app --port 8000 --reload 
+Current focus on developing `businessMicroservice` once venv activated:
+
+Installing few packages: 
+```
+pip install fastapi requests "uvicorn[standard]" SQLAlchemy psycopg2-binary pydantic pandas redis
+```
+Exporting the installed packages in env in a requirements.txt file: 
+`pip freeze > requirements.txt`
+
+We could have also defined packages in the txt file first and then run `pip install -r requirements.txt`. 
+
+Create core logic files: `touch main.py app.py`
+
+Writing boilerplate fastapi code in `main.py`: 
+```
+Core logic: 
+@app.get("/")
+def health_check_root_endpoint():
+    return {"Health check: main.py root server"}
+```
+
+To run the main app server on a port 8001 command used in env terminal: `uvicorn main:app --port 8001 --reload`
+Similar changes in app.py and run the server on another port 8000: `uvicorn app:app --port 8000 --reload`
+
+As we see, the app is running up on a server we defined. 
+
+Task1: Write a logic wherein when you hit an endpoint of app running on port 8000, it returns the health status of app running on port 8001? 
+```
+Core logic: 
+@app.get("/mainappstatus")
+def read_root():
+    url = 'http://127.0.0.1:8001/currentStatus' # Note that endpoint is camelCase, same is expected when typing in url/testing via postman
+    response = requests.get(url)
+    print(f"Status of main app server: {response.status_code}")
+    data = json.loads(response.text)
+    return data
+```
+
+Setup Redis locally via docker using commands: 
+Note that in below command I am using port mapping 7001:6379, i.e will run the Redis container on a different port 7001 rather than default port 6379. 
+```
 docker run --name redislocal -p 7001:6379 redis 
 docker exec -it redislocal redis-cli # inside the container 
+
+# Similar to docker, we can also use podman; like: 
+## podman run --name redislocal -p 7001:6379 redis
+## podman exec -it redislocal redis-cli    
+
+Commands to execute inside redis container to setup/play around: 
 127.0.0.1:6379> set name "suraj"
 OK
 127.0.0.1:6379> get name
@@ -70,56 +120,69 @@ OK
 (integer) 8
 127.0.0.1:6379> get name
 "vermaABC"
-
 127.0.0.1:6379(subscribed mode)> subscribe tempstream
 1) "subscribe"
 2) "tempstream"
 3) (integer) 1
 4) "message"
 5) "tempstream"
-
 127.0.0.1:6379> publish tempstream "learning redis..."
 (integer) 1
-
 You cannot publish if no subscribers
-
 127.0.0.1:6379> info server
 
+# stopping and starting redis container 
 docker stop 4c3199c94903
-docker stop redislocal 
-docker start redislocal
+docker stop redislocal (or) podman stop redislocal
+docker start redislocal (or) podman start redislocal
+```
 
-pip install redis
-pip freeze > requirements.txt 
+Setup Postgresql locally via docker using commands: 
+```
+docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres 
+# Note that -e key in command means env variable, if you add -d in the command, the terminal will run in detached mode - so in background all postgresql setup commands would run and you can continue using same terminal
 
+We can also use podman instead of docker; simply: 
+podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres
 
-docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres # -e is env variable, if you add -d in the command, the terminal will run in detached mode - so in background all postgresql setup commands would run and you can continue using same terminal
-
-docker ps
-
+Commands to run inside postgres container to setup/play around: 
 docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
-root@e4fb5a81ca46:/# psql -U postgresdockerlocal
-postgresdockerlocal-# create database fapidb; (note that the semi colon is very important when you execute the commands else it wont work)
-postgresdockerlocal-# CREATE USER postgresdluser WITH PASSWORD '1234'; (also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
+## Or to use podman: podman exec -it postgreslocal bash
+
+root@e4fb5a81ca46:/# psql -U postgresdockerlocal # we know the user name is postgresdockerlocal
+
+## Creating a database, later we create tables inside it
+postgresdockerlocal-# create database fapidb; 
+## Note that the semi colon is very important when you execute the commands else it wont work)
+
+# Creating another user and trying to create tables/db using that 
+postgresdockerlocal-# CREATE USER postgresdluser WITH PASSWORD '1234'; 
 ## Note: I have observed in postgresql docker container after executing command, execute it 2-3 times as the shell seems to be not listening very well. Also, sometimes, it doesn't sync well, so better exit the container and enter again for changes to work
+
 postgresdockerlocal=# \du ## Note that \q will exit session
 List of roles
       Role name      |                         Attributes                         
 ---------------------+------------------------------------------------------------
  postgresdluser      | 
  postgresdockerlocal | Superuser, Create role, Create DB, Replication, Bypass RLS
+ 
+## Giving all necessary permissions to our new user which we use to create tables/db. 
 postgresdockerlocal-# grant all privileges on database fapidb to postgresdluser;
 postgresdockerlocal=# GRANT CONNECT ON DATABASE fapidb TO postgresdluser;
-(to grant privileges to postgresdluser (because same user I am using in code to access the database and tables) used:)
 postgresdockerlocal=# GRANT pg_read_all_data TO postgresdluser;
 postgresdockerlocal=# GRANT pg_write_all_data TO postgresdluser;
 postgresdockerlocal=# GRANT ALL PRIVILEGES ON DATABASE "fapidb" to postgresdluser;
 postgresdockerlocal=# GRANT USAGE ON SCHEMA public TO postgresdluser;
 postgresdockerlocal=# GRANT ALL ON SCHEMA public TO postgresdluser;
 postgresdockerlocal=# GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO postgresdluser;
+
+## Trying to create a new table from our new user in the database: 
+fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL, PHONE INT NOT NULL);
+## But above command gave me error - despite debugging different ways, giving all permissions, still error persisted, so I changed my new user to root user - Not a good way to do, but it is what it is... 
+
 postgresdockerlocal=# ALTER DATABASE fapidb OWNER TO postgresdluser; ## as above changes were not working, despite my new user, it was not getting access/privileges, hence changed the db owner
-postgresdockerlocal=# \c fapidb postgresdluser (to connect to our database with the given user) ### To connect to database with superuser: postgresdockerlocal=# \c fapidb
-(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also followed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
+postgresdockerlocal=# \c fapidb postgresdluser (to connect to our database with the given user) 
+### Note: To connect to database with superuser: postgresdockerlocal=# \c fapidb
 fapidb-# \dt (to list down all tables)
 fapidb=> SELECT current_user;
 fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL, TYPE TEXT NOT NULL, PHONE INT NOT NULL);
@@ -129,16 +192,25 @@ fapidb=# select * from tpsqltable;
 ----+-------+------+-------
   1 | suraj | test | 12345
 (1 row)
+```
+
+Task2: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
+In database/ dir, I have defined the postgres and redis configs, which I use and later in app.py I check the health of both containers. 
+```
+I have segregated code in app.py under name Task2 which can be referred 
+```
+
+Task3: Write an async version of health check code for postgres and redis in 8000 port app, and try getting the health status of both in async fashion? 
+```
+I have segregated code in app.py under name Task3 which can be referred 
+```
+
+Note: There could be times when app gets stuck or even after refresh it does not send a response or gives ERROR: Address already in use response, in such case, we can kill the app running on port and restart it. 
+Simply put: List the servers using the port using: `lsof -i :8000`. 
+Kill the process pid: `kill -9 <pid>`
+(Command: `kill <pid>` sends signal (SIGTERM) and tells pid to terminate, but said program can execute some code first or even ignore the signal. `kill -9 <pid>`, on the other hand, forces the program to immediately terminate and cannot be ignored.
 
 
-## setting up podman as in docker removed from laptop - company...
-installed podman desktop, later docs: https://podman.io/docs/installation
-for all docker commands, just replace with keyword podman, eg: 
-podman run --name redislocal -p 7001:6379 redis
-podman run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres
-
-podman exec -it redislocal redis-cli        
-podman exec -it postgreslocal bash
 
 brew install k6 - to do load testing of api
 after writing k6 test code - in terminal - k6 run loadtest.js
@@ -384,9 +456,33 @@ modifications made...also load test??
 
 
 
-redis ping call - and postgres 1+1 call - health check. 
-dynamo paper 
-mongodb integrate... 
+
+--------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+Now focus on developing `consumerMicroservice` once venv activated:
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -449,6 +545,13 @@ https://www.youtube.com/watch?v=ghuo8m7AXEM&t=217s
 https://stackoverflow.com/questions/59169855/inserting-1-million-random-data-into-postgresql
 order by random() works but ~ https://dba.stackexchange.com/questions/261549/order-by-random-meaning-postgresql
 https://www.youtube.com/watch?v=P7EUFtjeAmI
+
+postgres
+(also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
+(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also followed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
+
+tasks todo: 
+mongodb integrate
 
 
 ------------------------------------

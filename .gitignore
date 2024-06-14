@@ -163,3 +163,4 @@ bin/
 # *.cfg
 *.gitattributes
 include/
+*.cfg
