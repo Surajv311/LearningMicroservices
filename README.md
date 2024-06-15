@@ -484,13 +484,18 @@ fapidb=> explain select * from tpsqltable order by created_at;
 Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
 **Task6**: Dockerize/Containerize the businessMicroservice?
-I have created a dockerfile for the repo, and now building the current service using: `docker build --no-cache -t bmservice .` (Note that `.` indicates current dir; Else syntax would be: `docker build -t <image> <path>`). 
-In our case we will use podman build: `podman build --no-cache -t bmservice .`
-Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run --name bmservicecontainer bmservice`
-containers may not aalways be living continuosly, they may die down
+I have created a dockerfile for the repo, and now building the current service using: `podman build --no-cache -t bmserviceimage .` (Note that `.` indicates current dir; Else syntax would be (docker/podman): `docker build -t <image> <path>`). 
+Once image was build, I ran the image, i.e spawn up the container with a name using: ` podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. 
+I have added explicit details inside the Dockerfile. Also, note, if there is a code change made, then image must be rebuilt. 
+To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage` 
 
+**Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled? 
 
-**Task7**: Since businessMicroservice also requires Redis/Postgres, integrate all via docker compose?
+**Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
+
+**Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
+
+**Task10**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 
 
 

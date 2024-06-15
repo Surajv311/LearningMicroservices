@@ -6,7 +6,8 @@ LABEL maintainer="suraj.verma@getsimpl.com"
 
 ENV APP_HOME /businessmicroservice
 # Set environment variables
-ENV APP_MODE='dev'
+ENV APP_MODE_DOCKER=dev
+# We can also write it as 'dev'
 
 RUN mkdir $APP_HOME
 # Running the command
