@@ -22,15 +22,40 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Install any needed packages specified in requirements.txt
 
 EXPOSE 8900
-# Make port 8900 available to the world outside this container
+# Make port 8900 available to the world outside this container - Note that EXPOSE keyword is just for documentation in Dockerfile and does not have any functional impact. The actual port mapping is determined by the -p flag in the docker run command. This flag specifies the host-to-container port mapping.
 
 ## Now 2 ways to run the FastAPI application code present in app.py:
 # CMD ["./run-server.sh"] # (Under Testing as getting errors using podman, docker not able to use ~ Error: preparing container for attach: crun: open executable: Permission denied: OCI permission denied) Way 1: Run app.py when the container launches; Check the .sh file defined in repo which has the command to execute when container runs
 CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Another way; Note that Using sh -c in the CMD instruction of a Dockerfile allows you to execute a shell command. This can be particularly useful when you need to perform tasks like setting environment variables, running complex commands, or dynamically configuring command-line arguments. sh calls the program sh as interpreter and the -c flag means execute the following command as interpreted by this program. In Ubuntu, sh is usually symlinked to /bin/dash, meaning that if you execute a command with sh -c the dash shell will be used to execute the command instead of bash.
 
 ## Cases: We have 3 moving parts here: Host machine which is my macbook currently, in the cloud world it could be an EC2 machine, Container named bmservicecontainer running in the host machine - can be seen in Podman/Docker Desktop, FastAPI App server running inside the container. There are few things to understand here:
-#127.0.0.1
-
+# First understand host vs port: A host is a computer or other device connected to a network that provides resources, services, and applications to users or other devices on the network. It is identified by an IP address (IPv4 or IPv6) and optionally a domain name. In computer networking, localhost (meaning "this computer") is the standard hostname given to the address of the loopback network interface. Localhost always translates to the loopback IP address 127.0.0.1 in IPv4. A port is a virtual endpoint for communication in networking, used to identify a specific process or service running on a host. Ports allow multiple network services to coexist on a single host by distinguishing traffic intended for different services or applications. Eg: For an app, say userLogin service and userBlocking service - both existing in the same machine (say EC2 machine), but being exposed via different ports in that machine. Host is a global identifier in a network. Port is local identifier on a specific host.
+# Any requests that come to the mac machine host i.e localhost here - say when I search for http://127.0.0.1:8900/ or http://0.0.0.0:8900/ on browser or via postman, it will not redirect/route the request directly to the fastapi server port running inside the container. Even though say we spin up our container using docker run command on port 8900 and then say we spin up our fastapi server also on same port 8900... There are 3 layers (host, container, app server) as we see, and to redirect we use port mapping. (explained below)
+# Port forwarding, also known as port mapping, is a technique used in networking to redirect a network port from one network address to another. Port forwarding is directing traffic from the outside world to the appropriate server inside a local TCP/IP network.
+# Notice what happens with below combinations once we keep building the dockerfile with the combinations and spin up the container:
+## Combination 1:
+# Running in terminal as we know that is how we port map and run the app: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage (or) docker run -p 4500:8900 --name bmservicecontainer bmserviceimage
+# Defined in Dockerfile: uvicorn app:app --host 0.0.0.0 --port 8900 --reload
+# Here when we hit this endpoint in our host machine: http://127.0.0.1:4500/ or http://localhost:4500/ -> It redirects the request from port 4500 of host machine to port 8900, basically its mapping it. On port 8900 our container is exposed/running the fastapi server (You can do docker ps or podman ps to check validate the port mapping). We see the unicorn command running wherein our fastapi app running on port 8900 which is exposed by the container - Hence the request that came all the way from port 4500 to the app server running inside the container on port 8900.
+# Notice when you run a FastAPI app inside a Docker container we are using --host 0.0.0.0 rather than binding it to 127.0.0.1, because in that case the application will only accept connections from within the container. This means that even if you publish a port on the host machine using Docker (e.g., docker run -p 8000:8000), you won't be able to access the application from outside the container because it is only listening for connections on the container's localhost. In contrast, if you bind the FastAPI app to 0.0.0.0, the application will listen for connections on all available network interfaces. When you publish a port using Docker, this setting allows external access. Also, the configuration for binding an application to 0.0.0.0 rather than 127.0.0.1 is not specific to FastAPI; it applies to any application running in a Docker container that you want to access from outside the container. This includes web servers, APIs, databases, and other network services.
+# Note after every combination I am rebuilding the image and respawning the container again: [podman build --no-cache -t bmserviceimage .] (Using --no-cache keyword, can be removed though); And to access the server in browser/postman I am visiting http://127.0.0.1:4500/ or http://localhost:4500/ and I get the response.
+## Combination 2:
+# Terminal: podman run -p 4500:8735 --name bmservicecontainer bmserviceimage
+# Dockerfile code: uvicorn app:app --host 0.0.0.0 --port 8900 --reload
+# As you see, our app is running on port 8900 and we are redirecting to port 8735 where nothing is running so anyways app would not run
+## Combination 3:
+# Terminal: podman run --name bmservicecontainer bmserviceimage
+# Dockerfile code: uvicorn app:app --host 0.0.0.0 --port 8900 --reload
+# No port is mapped so you won't be able to access the app from host machine
+## Combination 4:
+# Terminal: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage
+# Dockerfile code: uvicorn app:app --host 130.0.1.1 --port 8900 --reload
+# Not working as it says cannot assign requested address. In FastAPI, when you specify the host for your server, you usually use 0.0.0.0 to make the server accessible on all network interfaces or 127.0.0.1 to make it accessible only locally. However, specifying a specific IP address like 130.0.1.1 for the FastAPI server depends on whether that IP address is actually assigned to a network interface on your machine. If 130.0.1.1 is not assigned to any network interface on your machine, the FastAPI server won't be able to bind to it, and you'll encounter an error. You can check if it is assigned IP or not in network interface using: ifconfig | grep "127.0.1.1" or ifconfig | grep "130.0.1.1"
+## Combination 5:
+# Terminal: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage
+# Dockerfile code: uvicorn app:app --host 127.0.0.1 --port 8900 --reload
+# Not working since as discussed earlier it should be --host 0.0.0.0
+## Conclusion: Combination 1 is way to go so using command: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage and host 0.0.0.0
 
 ## Note eg: Incase we want to run main.py file which is inside sampleService folder, we will give the path in command as expected from fastapi
 # CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
@@ -83,7 +108,7 @@ CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Anothe
 # Example: ENV APP_ENV=production
 # 9. EXPOSE
 # EXPOSE <port>
-# Description: Informs Docker that the container listens on the specified network ports at runtime. It does not actually publish the port.
+# Description: Informs Docker that the container listens on the specified network ports at runtime. It does not actually publish the port. When you run a Docker container, the EXPOSE directive in the Dockerfile is mainly for documentation purposes and does not have any functional impact on port mappings. It indicates which ports the container listens on, but it does not configure those ports. The actual port mapping is determined by the -p flag in the docker run command. This flag specifies the host-to-container port mapping.
 # When to Use: When your application runs on specific ports.
 # Example: EXPOSE 80
 # 10. VOLUME
