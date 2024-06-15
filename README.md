@@ -131,6 +131,8 @@ def read_root():
     print(f"Status of main app server: {response.status_code}")
     data = json.loads(response.text)
     return data
+    
+Note: I start both the app/main servers in different ports 8000, 8001 and ensure they are running to be able to properly test code, by running previous commands as shown earlier. 
 ```
 
 Setup Redis locally via docker using commands: 
@@ -482,9 +484,11 @@ fapidb=> explain select * from tpsqltable order by created_at;
 Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
 **Task6**: Dockerize/Containerize the businessMicroservice?
-I have created a dockerfile for the repo, and now building the current service using: `docker build -t bmservice .` (Note that `.` indicates current dir; Else syntax would be: `docker build -t <image> <path>`). 
-In our case we will use podman build: `podman build -t bmservice .`
+I have created a dockerfile for the repo, and now building the current service using: `docker build --no-cache -t bmservice .` (Note that `.` indicates current dir; Else syntax would be: `docker build -t <image> <path>`). 
+In our case we will use podman build: `podman build --no-cache -t bmservice .`
 Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run --name bmservicecontainer bmservice`
+containers may not aalways be living continuosly, they may die down
+
 
 **Task7**: Since businessMicroservice also requires Redis/Postgres, integrate all via docker compose?
 

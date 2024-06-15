@@ -2,9 +2,11 @@ import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
-from ...businessMicroservice.database.postgresDbConfig import * # using 3 dots to get values present in a different module - though not using it currently
-from ...businessMicroservice.database.redisDbConfig import *
-
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why done ~ https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+from database.postgresDbConfig import *
+from database.redisDbConfig import *
 
 app = FastAPI()
 

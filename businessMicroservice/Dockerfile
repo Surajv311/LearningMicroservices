@@ -1,8 +1,10 @@
 ## For Task6
 FROM python:3.9-slim
-# Use an official Python runtime as a parent image
+# Use an official Python runtime as a parent image. Simply put it has base OS image like say linux/ubuntu and on top of it it has Python related dependencies installed, combined piece is served to us in this image.
 
-ENV APP_HOME /app
+LABEL maintainer="suraj.verma@getsimpl.com"
+
+ENV APP_HOME /businessmicroservice
 # Set environment variables
 ENV APP_MODE='dev'
 
@@ -10,20 +12,28 @@ RUN mkdir $APP_HOME
 # Running the command
 
 WORKDIR $APP_HOME
-# Set the working directory
-COPY . /app
-# Copy the current directory represented via '.' contents into the container at /app
+# Set the working directory to $APP_HOME which is /businessmicroservice. Basically, once your container runs which has our OS and Python related env setup this is the directory where I want to work with - Kind of creating a mini computer.
+COPY . /$APP_HOME
+# Observe that there are 3 components in above command: [COPY], [.], [/$APP_HOME]. Copy the current directory/folders contents present in local mac - represented via '.' into the container environment at $APP_HOME directory which in our case is /businessmicroservice present inside the container, apart from its other folders like /bin, /lib, /var, etc... As said earlier, its like setting up a mini computer
+# If say I write COPY ./apiLoadTest /$APP_HOME - in this case, it will copy just this folder in the container.
+# Understand that we are doing all this to make development setup platform agnostic. In other words, once we can build an image out of this dockerfile by executing all this steps. And say we publish the image in DockerHub or share with another developer. The developer would be able to access all the folders/files I had copied and created an image out of it in his/her machine without setting up python, fastapi, etc etc - all he should have is docker. They can pull my image and run it i.e create a docker container, then they will anyways be able to get access to all data/setup I had done and run the app.
 
 RUN pip install --no-cache-dir -r requirements.txt
 # Install any needed packages specified in requirements.txt
 
-EXPOSE 8801
-# Make port 8801 available to the world outside this container
+EXPOSE 8900
+# Make port 8900 available to the world outside this container
 
-## Now 2 ways to run the FastAPI application:
-# CMD ["./run-server.sh"] # Way 1: Run app.py when the container launches; Check the .sh file defined in repo which has the command to execute when container runs
-CMD ["uvicorn", "app:app", "--host", "127.0.0.1", "--port", "8000", "--reload"] # Another way
+## Now 2 ways to run the FastAPI application code present in app.py:
+# CMD ["./run-server.sh"] # (Under Testing as getting errors using podman, docker not able to use ~ Error: preparing container for attach: crun: open executable: Permission denied: OCI permission denied) Way 1: Run app.py when the container launches; Check the .sh file defined in repo which has the command to execute when container runs
+CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Another way; Note that Using sh -c in the CMD instruction of a Dockerfile allows you to execute a shell command. This can be particularly useful when you need to perform tasks like setting environment variables, running complex commands, or dynamically configuring command-line arguments. sh calls the program sh as interpreter and the -c flag means execute the following command as interpreted by this program. In Ubuntu, sh is usually symlinked to /bin/dash, meaning that if you execute a command with sh -c the dash shell will be used to execute the command instead of bash.
 
+## Cases: We have 3 moving parts here: Host machine which is my macbook currently, in the cloud world it could be an EC2 machine, Container named bmservicecontainer running in the host machine - can be seen in Podman/Docker Desktop, FastAPI App server running inside the container. There are few things to understand here:
+#127.0.0.1
+
+
+## Note eg: Incase we want to run main.py file which is inside sampleService folder, we will give the path in command as expected from fastapi
+# CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
 
 ###################################################################################################
 # Note:
