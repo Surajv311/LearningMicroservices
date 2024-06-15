@@ -497,6 +497,7 @@ To run the container in some other port parallely using same image, simply: `pod
 
 **Task10**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 
+**Task11**: Setup a NoSQL db like mongo db and health check mongodb service?  
 
 
 --------------------------------------
