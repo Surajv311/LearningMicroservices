@@ -60,7 +60,7 @@ Installing few packages:
 pip install fastapi requests "uvicorn[standard]" SQLAlchemy==1.4.46 psycopg2-binary pydantic pandas redis
 ```
 
-Exporting the installed packages in env in a requirements.txt file: 
+Exporting the installed packages/dependencies in env in a requirements.txt file: 
 `pip freeze > requirements.txt`
 
 My current snapshot of packages based on commands ran earlier: 
@@ -113,9 +113,11 @@ Core logic:
 def health_check_root_endpoint():
     return {"Health check: main.py root server"}
 ```
-
-To run the main app server on a port 8001 command used in env terminal: `uvicorn main:app --port 8001 --reload`
-Similar changes in app.py and run the server on another port 8000: `uvicorn app:app --port 8000 --reload`
+My current dir: `/Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`
+To run the app server on a port 8000 command used in env terminal: `uvicorn app:app --port 8000 --reload`
+Note in above case, the path where you execute the command and the file path are same. 
+Assume you are in a different path and want to run the server, it can also be done (same I have done here for learning purposes in this repo);
+To run the main app server on a port 8001 command used in env terminal: `uvicorn sampleService.main:app --port 8001 --reload`. You use `.` operator to give the path. 
 
 As we see, the app is running up on a server we defined. 
 
@@ -243,7 +245,11 @@ fapidb=# select * from tpsqltable;
 **Task2**: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
 In database/ dir, I have defined the postgres and redis configs, which I use and later in app.py I check the health of both containers. 
 ```
-I have segregated code in app.py under name Task2 which can be referred 
+I have segregated code in app.py under name Task2 which can be referred. 
+Also have created config files in database dir. 
+Note that in the postgres config defined: Either I can directly use the postgres url defined in variable, or I can export it in my local env by running command in terminal: 
+export POSTGRES_DB_URL="postgresql://postgresdluser:1234@localhost:7002/fapidb"
+And then extract value from this variable using os.getenv() ~ same can be seen in the postgresDbConfig.py file
 ```
 
 **Task3**: Write an async version of health check code for postgres and redis in 8000 port app, and try getting the health status of both sync and async code? 
@@ -476,7 +482,11 @@ fapidb=> explain select * from tpsqltable order by created_at;
 Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
 **Task6**: Dockerize/Containerize the businessMicroservice?
+I have created a dockerfile for the repo, and now building the current service using: `docker build -t bmservice .` (Note that `.` indicates current dir; Else syntax would be: `docker build -t <image> <path>`). 
+In our case we will use podman build: `podman build -t bmservice .`
+Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run --name bmservicecontainer bmservice`
 
+**Task7**: Since businessMicroservice also requires Redis/Postgres, integrate all via docker compose?
 
 
 

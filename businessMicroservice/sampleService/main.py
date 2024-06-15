@@ -2,6 +2,9 @@ import json
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+from ...businessMicroservice.database.postgresDbConfig import * # using 3 dots to get values present in a different module - though not using it currently
+from ...businessMicroservice.database.redisDbConfig import *
+
 
 app = FastAPI()
 
