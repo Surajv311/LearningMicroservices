@@ -22,4 +22,11 @@ if os.getenv("APP_MODE_DOCKER", "None") == 'docker_mode':
     REDIS_PASSWORD = None
     REDIS_DB = None
 
+if os.getenv("APP_MODE_DOCKER", "None") == 'docker_compose_mode': # we have defined this variable in the compose file
+    REDIS_HOST = os.getenv('REDIS_HOST') # fetching variables using os.getenv() as we have defined them in compose file so the variables will exist in the container environment and can be picked up. If we log into our application container shell - we can do printenv and see all variables
+    REDIS_PORT = os.getenv('REDIS_PORT')
+    REDIS_USER = None
+    REDIS_PASSWORD = None
+    REDIS_DB = None
+
 rd = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)

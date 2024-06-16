@@ -133,7 +133,11 @@ Note: I start both the app/main servers in different ports 8000, 8001 and ensure
 ```
 
 Setup Redis locally via docker using commands: 
-Note that in below command I am using port mapping 7001:6379, i.e will run the Redis container on a different port 7001 rather than default port 6379. 
+Note that in below command I am using port mapping 7001:6379, i.e will run the Redis container on a different port 7001 rather than default port 6379 (in a rough way). 
+To be more technical (which we will again revisit and understand in later parts):
+- We are using concept of port mapping; So this flag maps port 6379 inside the container (the default port Redis listens on) to port 7001 on the host machine. This allows you to connect to Redis on your host machine using localhost:7001.
+- When we type http://localhost:7001/ in our browser or postman, we won't get any response though as it (Redis) is a database server, not a web server. Redis container listens for database connections on its port (in this case, 6379 mapped to 7001), but it does not serve web pages or respond to HTTP requests.
+
 ```
 docker run --name redislocal -p 7001:6379 redis 
 docker exec -it redislocal redis-cli # inside the container 
@@ -182,6 +186,9 @@ You cannot publish if no subscribers
 docker stop 4c3199c94903
 docker stop redislocal (or) podman stop redislocal
 docker start redislocal (or) podman start redislocal
+
+# to get the version or details of the container use: docker inspect redislocal (or) podman inspect redislocal
+We get version is, apart from other details (as I am doing the project): "REDIS_VERSION=7.2.4"
 ```
 
 Setup Postgresql locally via docker using commands: 
@@ -239,6 +246,9 @@ fapidb=# select * from tpsqltable;
 ----+-------+------+-------
   1 | suraj | test | 12345
 (1 row)
+
+# to get the version or details of the container use: docker inspect postgreslocal (or) podman inspect postgreslocal
+We get version is, apart from other details (as I am doing the project): "PG_VERSION=16.2-1.pgdg120+2"
 ```
 
 **Task2**: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
@@ -482,7 +492,7 @@ Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
 **Task6**: Dockerize/Containerize the businessMicroservice?
 I have created a dockerfile for the repo, and now building the current service using: `podman build --no-cache -t bmserviceimage .` (Note that `.` indicates current dir; Else syntax would be (docker/podman): `docker build -t <image> <path>`). 
-Once image was build, I ran the image, i.e spawn up the container with a name using: ` podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. 
+Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. Then we can hit APIs via Postman/Browser and see response. Our postgres and redis cotainers are anyways running from previous commands.
 I have added explicit details inside the Dockerfile. Also, note, if there is a code change made, then image must be rebuilt. 
 To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage` 
 
@@ -494,8 +504,8 @@ So credentials like: POSTGRES_HOST/REDIS_HOST = "localhost".
 When I dockerized my fastapi app and ran it in a docker container the networking context changed. Key points:
 Isolation: Each Docker container has its own network stack. localhost within a Docker container refers to the container itself, not the host machine.
 Networking: By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise.
-By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address.
-You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py. 
+By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address. So its like host machine is a common ground/platform for multiple containers running inside it, so any request should be routed via the machine so that it can exactly know which container is interacting with which one - in a rough explanation. 
+You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; If it were an AWS EC2 machine, we would anyways know the IP of the machine...; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py. 
 We can ask how is docker able to route the connection from container to host machine via bridge network concept?: 
 Bridge Network Creation: By default, Docker containers are connected to a bridge network. This is an internal virtual network that allows containers to communicate with each other and the host machine.
 Container-to-Host Communication: When you specify the host machine's IP address in the container, the container's networking stack knows to route the traffic out of the container to the host machine's network interface.
@@ -503,7 +513,9 @@ Network Address Translation (NAT): Docker uses Network Address Translation to ma
 To access a service running on the host machine from a Docker container, you specify the host machine's IP address. For example, if your host machine's IP address is 192.168.1.100, you can configure your application to connect to this IP.
 
 **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
-
+A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
+Can check the docker-compose.yaml file for reference. 
+To build the compose file: 
 
 **Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
 
