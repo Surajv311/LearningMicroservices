@@ -6,8 +6,9 @@ services: # we define all container services we want to run together in 1 shot, 
     ## Way 1:
     #build: . # this means build the current directory where the Dockerfile is present, we could provide specific path as well if required. If no Dockerfile in the current path then the step will fail... The command to spin up the service using unicorn would anyways be present in Dockerfile as we know
     ## Way 2:
-    context: .  # Use the current directory as the build context
-    dockerfile: Dockerfile  # This is optional if the Dockerfile is named 'Dockerfile'
+    build:
+      context: .  # Use the current directory as the build context
+      dockerfile: Dockerfile  # This is optional if the Dockerfile is named 'Dockerfile'
     ## Way 3:
     #build: . # Use the current directory as the build context
     #command: sh -c "uvicorn app:app --host 0.0.0.0 --port 8900 --reload" # The command directive specifies the command to start the application within the container after it has been built - though may not really be needed as in our current case we have defined a uvicorn command in Dockerfile if we see, had it not been there and we wanted to start service via docker compose way, then we would have to use the command argument here

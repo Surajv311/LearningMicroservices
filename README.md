@@ -518,7 +518,7 @@ A Docker Compose file, typically named docker-compose.yml, is used to define and
 Can check the docker-compose.yaml file for reference. Do ensure docker/podman compose utilities are installed as they need to be installed seaprately and do not come packed with usual docker/podman. 
 To build the compose file: `docker-compose build` (or `podman-compose build`). Note you can remove `-` and run command as well like: `podman compose build`. 
 To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode add `-d` flag. 
-Then you can access the service on from browser/postman. 
+Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or podman)
 To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
 
 **Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
