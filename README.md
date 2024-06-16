@@ -490,6 +490,20 @@ I have added explicit details inside the Dockerfile. Also, note, if there is a c
 To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage` 
 
 **Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled? 
+The only thing changed is the host machine in the redis/postgres configs. 
+Now what changed?: 
+When I did not dockerize my fastapi app and ran it on localhost (means it basically ran on my macbook/host machine) and hit postgres or redis container for health check - I got a response. Understand that postgres and redis containers were also running on host machine only. Hence all shared the same network namespace. This means that localhost referred to the same machine for both the FastAPI application and PostgreSQL/Redis.
+So credentials like: POSTGRES_HOST/REDIS_HOST = "localhost". 
+When I dockerized my fastapi app and ran it in a docker container the networking context changed. Key points:
+Isolation: Each Docker container has its own network stack. localhost within a Docker container refers to the container itself, not the host machine.
+Networking: By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise.
+By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address.
+You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py. 
+We can ask how is docker able to route the connection from container to host machine via bridge network concept?: 
+Bridge Network Creation: By default, Docker containers are connected to a bridge network. This is an internal virtual network that allows containers to communicate with each other and the host machine.
+Container-to-Host Communication: When you specify the host machine's IP address in the container, the container's networking stack knows to route the traffic out of the container to the host machine's network interface.
+Network Address Translation (NAT): Docker uses Network Address Translation to map container ports to host ports. When a container tries to access an IP address and port, Docker's networking translates these into appropriate network requests.
+To access a service running on the host machine from a Docker container, you specify the host machine's IP address. For example, if your host machine's IP address is 192.168.1.100, you can configure your application to connect to this IP.
 
 **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
 

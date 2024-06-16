@@ -7,6 +7,8 @@ from os import environ as env
 """
 Defining the postgres database configs. 
 """
+
+## For Task2
 POSTGRES_HOST = "localhost"
 POSTGRES_PORT = 7002
 POSTGRES_USER = "postgresdluser"
@@ -24,7 +26,7 @@ postgres_table = "tpsqltable" # this table is created in the db; when we logged 
 ## If we run dockerized version of this service in that case, I have defined an env variable in dockerfile APP_MODE_DOCKER, since its env, I will check in if below condition is true, in that case, postgres configs change so that our fastapi microservice is able to connect to other postgres microservice
 ## I have kept in mind similar env variable does not exist in my local macbook, else it will create confusion
 ## Also comments, defined in previous code, I am removing from below to keep things clean
-if os.getenv("APP_MODE_DOCKER", "None") == 'dev':
+if os.getenv("APP_MODE_DOCKER", "None") == 'docker_mode':
     POSTGRES_HOST = "192.168.29.72"
     POSTGRES_PORT = 7002
     POSTGRES_USER = "postgresdluser"
