@@ -30,7 +30,8 @@ python3
 pyenv versions
 ```
 And do ensure you have `pip` package manager installed and docker/podman installed to run containers. 
-In this exercise, I have used docker in the beginning later switched to podman (Note all docker commands run same in podman, except instead of using docker keyword, use podman)
+In this exercise, I have used docker in the beginning later switched to podman (Note all docker commands run same in podman, except instead of using `docker` keyword, use `podman` in commands)
+So do install docker, docker desktop, podman, docker compose, podman compose (compose utilities are different and should be installed separately - we learn more about them later)
 
 Create 2 folders or virtual environments where we will have our code: 
 `python3 -m venv consumerMicroservice`
@@ -514,9 +515,9 @@ To access a service running on the host machine from a Docker container, you spe
 
 **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
 A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
-Can check the docker-compose.yaml file for reference. 
-To build the compose file: `docker-compose build`
-To run it: `docker-compose up`; To run in detached mode add `-d` flag. 
+Can check the docker-compose.yaml file for reference. Do ensure docker/podman compose utilities are installed as they need to be installed seaprately and do not come packed with usual docker/podman. 
+To build the compose file: `docker-compose build` (or `podman-compose build`). Note you can remove `-` and run command as well like: `podman compose build`. 
+To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode add `-d` flag. 
 Then you can access the service on from browser/postman. 
 To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
 

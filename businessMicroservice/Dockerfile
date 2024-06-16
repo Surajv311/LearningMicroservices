@@ -59,7 +59,7 @@ CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Anothe
 ## Conclusion: Combination 1 is way to go so using command: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage and host 0.0.0.0
 
 ## Note eg: Incase we want to run main.py file which is inside sampleService folder, we will give the path in command as expected from fastapi
-# CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
+CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
 
 ###################################################################################################
 # Note:
