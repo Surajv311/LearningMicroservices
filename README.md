@@ -1,24 +1,21 @@
 ## Project Overview
 
-Note: Do consider skipping below overviews of project and jump to the steps followed in next section to understand the flow of project (from basics). 
-
 - Initial intention (rough): 
-  - We must have 2 microservices say: `businessMicroservice` and `consumerMicroservice`. 
-  - Consider having the following db containers running as well locally: `postgresql`, `redis`, `mongodb`.
+  - We must have 2 applications say: `businessMicroservice` and `consumerMicroservice`. 
+  - Consider having the following db containers running as well locally: `postgresql`, `redis`, `mongodb`, etc.
   - `businessMicroservice` should have endpoints which check the health of db containers, query over tables in the db's, and have the ability to perform basic CRUD operations. 
-  - We also intend to play around with ports as well hence we will have cases where we are running the service in 2 different ports and trying to get the status of one port from another, etc; Or running containers on 2 different ports etc. 
   - Containzerize the application. 
-  - `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `businessMicroservice`. In short, allow 2 microservices to communicate with one another. 
-  - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, so kind of act like load balancer.
+  - We should be able to spin up multiple instances of the microservice running on different ports. There should be APIs which capture status of another port from a given port.
+  - Later, `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `businessMicroservice`. In short, allow 2 microservices to communicate with one another. 
+  - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, kind of acting like a load balancer.
 
 - Future intention (rough)
-  - The complexity of project will increase with time. 
-  - We will have more complex scenarios to cover, and probably add end-to-end flow, like say post interaction, publishing data to Kafka/Flink; Or having Debezium setup to capture CDC once we update postgres tables via our microservice, etc etc. 
-  - Objective is to mimic how production systems work as closely as possible. In local if things work well and fine, same is done in cloud - FYI, it's just that some minor tweaks have to be made since ecosystem changes but the core concepts remain the same. We will try to cover as many cases as possible in time and learn!. 
+  - The complexity of project will increase with time. We will have more scenarios to cover like: publishing data to Kafka/Flink; Or having Debezium setup to capture CDC once we update postgres tables via our microservices, etc. 
+  - Objective is to mimic how production systems work as closely as possible. As a note, intention is to learn how services or systems interact locally, once, that is clear, understanding how things work in cloud would be much easier, as core concepts remain the same!.  
 
-Note: Some major errors I encountered, which was worth learning exp., I have mentioned in the end of Readme. And, as well as the blogs/references/videos I watched to create this project + little help from chatgpt. 
+Note: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts (and re-verified as well) I have attached at the bottom of the Readme for reference. 
 
-------------------
+------------------------------------------------------
 
 ### Steps followed (Flow) in project: 
 
@@ -507,6 +504,7 @@ To access a service running on the host machine from a Docker container, you spe
 
 **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
 
+
 **Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
 
 **Task10**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
@@ -594,6 +592,25 @@ mongodb integrate
 error faced with sqlalchemy
 https://www.youtube.com/watch?v=epaopuvvOGs
 https://stackoverflow.com/questions/75282511/df-to-table-throw-error-typeerror-init-got-multiple-values-for-argument
+
+https://www.youtube.com/watch?v=fSmLiOMp2qI
+https://www.youtube.com/watch?v=KuCwrySinqI
+
+docker builds on top of another layer by layer as it helps in caching
+docker build time - check the steps which need not be reexeucted even for a small change.. and docker image size - check the os base layr you are installing
+we want local databSes to retain infromation across restarts - hence docker volumes
+say you create a mongo db container and now you want to persist data s well,
+ensure you have volume created for it: 
+docker volume create dbvol
+docker run -v dbvol:/data/db -p 27017:27017 mongo
+inside the container it will create volume at the /data/db path
+as we know we can go inside mongo/postgres/redis container using docker exec -it <>
+if container restarts or kills. etc... vol has saved data... once conteinaer spins up it can reconnect to volume
+
+volume a logical space inside container where you can dump data into volume, if container goes down, sicne volumne persists data still tehre
+docker volume create --name hello
+docker run -d -v hello:/container/path/for/volume container_image my_command
+
 
 
 ------------------------------------
