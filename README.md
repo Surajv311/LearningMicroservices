@@ -515,7 +515,10 @@ To access a service running on the host machine from a Docker container, you spe
 **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
 A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
 Can check the docker-compose.yaml file for reference. 
-To build the compose file: 
+To build the compose file: `docker-compose build`
+To run it: `docker-compose up`; To run in detached mode add `-d` flag. 
+Then you can access the service on from browser/postman. 
+To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
 
 **Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
 
