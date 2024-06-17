@@ -72,9 +72,9 @@ EXPOSE 8900 8901
 
 # We apply all our learnings from above and run the businessMicroservice and sampleService inside it on different ports to have full fledged container running
 ENTRYPOINT ["sh", "-c"]
-CMD ["uvicorn app:app --host 0.0.0.0 --port 8900 --reload --reload & uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
+CMD ["uvicorn app:app --host 0.0.0.0 --port 8900 --reload & uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
 
-###################################################################################################
+######################################################################################################################################################################################################
 # Note:
 # A Dockerfile is a text document that contains all the commands a user could call on the command line to assemble an image. Here are the main components of a Dockerfile and explanations of when and how to use them:
 # 1. FROM

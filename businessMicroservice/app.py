@@ -160,9 +160,11 @@ def get_other_server_status_docker():
     data = json.loads(response.text)
     return data
 
-
 ##################################################################
-
+# To complete Task10
+@app.get("/bmserviceserverstatus")
+def get_bmservice_server_status_docker():
+    return {"businessMicroservice FastAPI app.py server status: Healthy"}
 
 ##################################################################
 

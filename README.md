@@ -553,11 +553,23 @@ One, we type-in the url from our browser/postman (which is host machine) and acc
 Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
 
 **Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
+Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. 
+Since consumerMicroservice is a separate service altogether I am spinning it up manually from Docker. 
+Docker compose is not needed as its just 1 service. From docker compose anyways I have spinned up businessMicroservice app/ postgres/ redis.
+Command used (docker/podman): 
+`podman build --no-cache -t cmserviceimage .`
+Once image was build: `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` - Connecting host's 3500 port with 6800 port of container (Note check Dockerfile - I am exposing port 6800 of container where the consumer service fastapi server is running using uvicorn)
+In app.py code of both consumer & business microservice, see the url is connecting to the fast api server running in another container; Though understand that both containers are running in same host machine (my macbook). 
+In businessMicroservice: Defined `/bmserviceserverstatus` to return response when we hit a service running in another container; url we are hitting: `http://businessmicroservice:8901/bmserviceserverstatus` - Recall we are running the app server using docker compose at port 8901 in businessMicroservice, for run via normal docker (without compose) or from host we use different  ports as seen in earlier tasks, but for testing current task we have activated this port by keeping the service up using docker compose. 
+In consumerMicroservce: From host machine I hit `/bmservicestatus` endpoint to get `/bmserviceserverstatus` defined in businessMicroservice
+Note that once this test succedes - we can also imagine we would couple the consumerMicroservice inside a docker-compose file as well and have all services -businessMicroservice, postgres, redis, etc running up. But we are restricting now as a fundamental understanding has been developed and we cannot/shouldn't unnecessarily clutter things a lot... 
 
-
-**Task11**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+**Task11**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 
 **Task12**: Setup a NoSQL db like mongo db and health check mongodb service?  
+
+**Task13**: Build CRUD operations in databases (postgres, redis, mongodb) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+
 
 
 --------------------------------------
@@ -658,6 +670,8 @@ if container restarts or kills. etc... vol has saved data... once conteinaer spi
 volume a logical space inside container where you can dump data into volume, if container goes down, sicne volumne persists data still tehre
 docker volume create --name hello
 docker run -d -v hello:/container/path/for/volume container_image my_command
+
+explore later - but interesting thing - running something in background using fastapi: https://fastapi.tiangolo.com/tutorial/background-tasks/
 
 
 
