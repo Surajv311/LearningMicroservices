@@ -13,7 +13,7 @@
   - The complexity of project will increase with time. We will have more scenarios to cover like: publishing data to Kafka/Flink; Or having Debezium setup to capture CDC once we update postgres tables via our microservices, etc. 
   - Objective is to mimic how production systems work as closely as possible. As a note, intention is to learn how services or systems interact locally, once, that is clear, understanding how things work in cloud would be much easier, as core concepts remain the same!.  
 
-Note: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts (and re-verified as well) I have attached at the bottom of the Readme for reference. 
+Note: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts (and re-verified as well) I have attached at the bottom of the Readme for reference as well as in code pieces as comments. 
 
 ------------------------------------------------------
 
@@ -553,7 +553,7 @@ One, we type-in the url from our browser/postman (which is host machine) and acc
 Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
 
 **Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
-Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. 
+Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. Also ensured by venv is activated. 
 Since consumerMicroservice is a separate service altogether I am spinning it up manually from Docker. 
 Docker compose is not needed as its just 1 service. From docker compose anyways I have spinned up businessMicroservice app/ postgres/ redis.
 Command used (docker/podman): 
@@ -573,6 +573,21 @@ Note that - we can also imagine coupling the consumerMicroservice inside the sam
 Commands ran: 
 When in dir: `/consumerMicroservice`: ` podman build --no-cache -t frpconsumermicroservicedockersrj .`
 When in dir: `/businessMicroservice`: `podman compose build` and `podman build --no-cache -t frpbusinessmicroservicedockersrj .`
+To push `frpconsumermicroservicedockersrj`:
+```
+podman login -u surajv311 -p <my_password>  docker.io/surajv311/frpconsumermicroservicedockersrj
+podman images  (to select the image_id and run below command)
+podman push 8caafac0cb3c docker://docker.io/surajv311/frpconsumermicroservicedockersrj:1.0.0  
+```
+Link: https://hub.docker.com/r/surajv311/frpconsumermicroservicedockersrj
+To push `frpbusinessmicroservicedockersrj`:
+```
+podman login -u surajv311 -p <my_password>  docker.io/surajv311/frpbusinessmicroservicedockersrj
+podman images  (to select the image_id and run below command)
+podman push 23ed0e8617b5 docker://docker.io/surajv311/frpbusinessmicroservicedockersrj:1.0.0
+```
+Link: https://hub.docker.com/r/surajv311/frpbusinessmicroservicedockersrj
+
 
 **Task12**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 Should I define multiple services in docker compose file and then individually ping them for this or is there another way? 
@@ -581,23 +596,14 @@ Should I define multiple services in docker compose file and then individually p
 
 **Task14**: Build CRUD operations in databases (postgres, redis, mongodb) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
 
-**Task15**: Setup Kafka locally or via docker. Create JSON events from the service and publish it to Kafka service?  
-
-
---------------------------------------
-
-
-Now focus on developing `consumerMicroservice` once venv activated:
-
-
-
-
+**Task15**: Setup Kafka locally or via docker. Create JSON events from the service and publish it to Kafka service?
 
 
 
 ------------------------------------
 
 References/ Other notes: (refactor this part later...)
+(WIP part...)
 
 https://dbeaver.io/ - dbeaver to see postgres gui
 
@@ -684,6 +690,24 @@ docker volume create --name hello
 docker run -d -v hello:/container/path/for/volume container_image my_command
 
 explore later - but interesting thing - running something in background using fastapi: https://fastapi.tiangolo.com/tutorial/background-tasks/
+
+https://stackoverflow.com/questions/64199116/how-to-push-an-image-to-the-docker-registry-using-podman
+https://stackoverflow.com/questions/39663096/docker-compose-creating-multiple-instances-for-the-same-image
+https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile
+https://stackoverflow.com/questions/24958140/what-is-the-difference-between-the-copy-and-add-commands-in-a-dockerfile
+multi stage builds
+https://stackoverflow.com/questions/1622506/what-exactly-is-building
+https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
+https://github.com/docker-library/official-images/blob/master/README.md
+https://www.reddit.com/r/docker/comments/rk1kfp/0000_instead_of_localhost_for_port/
+https://github.com/surajvm1/demystifying-containers
+https://stackoverflow.com/questions/50551846/what-are-the-differences-between-ubuntu-and-and-an-ubuntu-docker-image
+https://www.reddit.com/r/docker/comments/1763y1q/run_games_using_docker/
+https://stackoverflow.com/questions/46708721/do-all-docker-images-have-minimal-os
+https://medium.com/@augustineozor/understanding-docker-bridge-network-6e499da50f65
+https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose
+https://stackoverflow.com/questions/54148999/where-are-docker-images-stored-physically-on-macos
+https://spacelift.io/blog/docker-compose
 
 
 
