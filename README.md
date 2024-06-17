@@ -570,7 +570,9 @@ ALERT NOTE: Upon running earlier command: `podman run -p 3500:6800 --name cmserv
 Note that - we can also imagine coupling the consumerMicroservice inside the same docker-compose file as well specifying the path (build context as something like `./consumerMicroservice` than giving `.`) and have all services - businessMicroservice, postgres, redis, etc running up altogether. But we are restricting now as a fundamental understanding has been developed by this far and we can try avoiding cluttering things more... 
 
 **Task11**: Publish the docker-compose file having businessMicroservice, postgres, redis to dockerhub and check if another developer can pull the image and run it on their machine?
-
+Commands ran: 
+When in dir: `/consumerMicroservice`: ` podman build --no-cache -t frpconsumermicroservicedockersrj .`
+When in dir: `/businessMicroservice`: `podman compose build` and `podman build --no-cache -t frpbusinessmicroservicedockersrj .`
 
 **Task12**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 Should I define multiple services in docker compose file and then individually ping them for this or is there another way? 
