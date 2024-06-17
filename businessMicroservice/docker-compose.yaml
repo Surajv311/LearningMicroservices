@@ -3,7 +3,7 @@ version: '3' # basically version of docker compose format I am using, version 3 
 
 networks: # A Docker network is a virtual network created by Docker to enable communication between Docker containers. This virtual network facilitates the interaction between containers, whether they're on the same host or different hosts, depending on the type of network used.
   bmservice_network: # we are using this network to run all containers. Note that if this is not specified docker gives a default name to the network based on project name (can be checked using command docker or podman network ls), eg in this case, the default network would have been businessmicroservice_default - but for sake of learning we are renaming our network and defining same in other containers
-    name: bmservice_compose_network
+    name: bmservice_compose_network # to inspect a network: podman network inspect bmservice_compose_network
 
 services: # we define all container services we want to run together in 1 shot, rather than individually running up all containers like my fastapi service, postgres service, redis service, by individually running docker commands
   businessmicroservice:
