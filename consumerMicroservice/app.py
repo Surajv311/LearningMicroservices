@@ -13,7 +13,7 @@ def consumer_service_status(): # for health check
 # To complete Task10
 @app.get("/bmservicestatus")
 def get_bmservice_server_status_docker():
-    url = 'http://businessmicroservice:8901/bmserviceserverstatus'
+    url = 'http://businessmicroservice:8900/bmserviceserverstatus'
     response = requests.get(url)
     print(f"Hitting API from consumerMicroservice")
     print(f"Status of fastapi app server in businessMicroservice: {response.status_code}")

@@ -61,7 +61,7 @@ services: # we define all container services we want to run together in 1 shot, 
     image: redis:6 # validated with local image I am running using podmand/docker inspect redislocal it is v6 only as a part of previous tasks
     container_name: redislocalcontainer
     ports:
-      - "7001:6379" # port mapping
+      - "7001:6379" # port mapping - though as discussed earlier even if we search for localhost/7001 or 0.0.0.0/7001 - we won't get a response as this is a database server and serves db request/response and not a web server whose response could be rendered in browser...similarly case of redis...
     volumes:
       - redisdata:/dbdata/redisvolume # similar to above, in redis container, this is where the volume would mount
     networks:
