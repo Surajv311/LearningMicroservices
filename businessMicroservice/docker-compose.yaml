@@ -1,5 +1,10 @@
 ## For Task8
 version: '3' # basically version of docker compose format I am using, version 3 is popular...
+
+networks: # A Docker network is a virtual network created by Docker to enable communication between Docker containers. This virtual network facilitates the interaction between containers, whether they're on the same host or different hosts, depending on the type of network used.
+  bmservice_network: # we are using this network to run all containers. Note that if this is not specified docker gives a default name to the network based on project name (can be checked using command docker or podman network ls), eg in this case, the default network would have been businessmicroservice_default - but for sake of learning we are renaming our network and defining same in other containers
+    name: bmservice_compose_network
+
 services: # we define all container services we want to run together in 1 shot, rather than individually running up all containers like my fastapi service, postgres service, redis service, by individually running docker commands
   businessmicroservice:
     ## To build the fastapi businessmicroservice, we have 3 ways in which we can define below
@@ -31,6 +36,8 @@ services: # we define all container services we want to run together in 1 shot, 
     depends_on: # our app depends on postgres and redis images also spawning up - as we have APIs which health check these db containers... hence added this condition
       - postgreslocalservice
       - redislocalservice
+    networks:
+      - bmservice_network
 
   postgreslocalservice:
     image: postgres:16 # we are using v16 when we check podman or docker inspect postgreslocal so using same image in docker compose file
@@ -47,6 +54,8 @@ services: # we define all container services we want to run together in 1 shot, 
       - pgdata:/dbdata/postgresqlvolume # Changes made to a container’s environment are lost when the container stops, crashes, or gets replaced. You can Dockerize stateful applications such as databases and file servers by attaching volumes to your containers. Volumes provide persistent storage that’s independent of individual containers. You can reattach volumes to a different container after a failure or use them to share data between several containers simultaneously. Volumes are a mechanism for storing data outside containers. All volumes are managed by Docker and stored in a dedicated directory on your host, usually /var/lib/docker/volumes for Linux systems.
       # Under the hood, above command would run 2 commands: [docker volume create pgdata] and [docker run -v pgdata:/dbdata/postgresqlvolume -p 7002:5432 ...all credentials command... postgres]
       # Inside the container it will create volume pgdata at the path /dbdata/postgresqlvolume. We can literally go into the container shell for postgres using docker exec -it... and cd over to the directory and see it
+    networks:
+      - bmservice_network
 
   redislocalservice:
     image: redis:6 # validated with local image I am running using podmand/docker inspect redislocal it is v6 only as a part of previous tasks
@@ -55,6 +64,8 @@ services: # we define all container services we want to run together in 1 shot, 
       - "7001:6379" # port mapping
     volumes:
       - redisdata:/dbdata/redisvolume # similar to above, in redis container, this is where the volume would mount
+    networks:
+      - bmservice_network
 
 volumes:
   pgdata:
