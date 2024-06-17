@@ -18,3 +18,8 @@ def health_check_root_endpoint():
 @app.get("/currentStatus")
 def health_check_fun():
     return {"Status: main.py app healthy"}
+
+# To complete Task9
+@app.get("/currentmainstatusdockercompose")
+def health_check_fun_docker_compose():
+    return {"Status: main.py app healthy in docker compose"}

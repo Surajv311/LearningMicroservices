@@ -20,6 +20,7 @@ def get_other_server_status():
     print(f"Status of main app server: {response.status_code}")
     data = json.loads(response.text)
     return data
+
 #################################################################################
 # To complete Task2
 @app.get("/redisHealth") # Note the endpoint is in camelCase
@@ -149,7 +150,15 @@ def postgresFetchRecords():
     finally:
         db.close()
 ##################################################################
-
+# To complete Task9
+@app.get("/mainappstatusdockercompose")
+def get_other_server_status_docker():
+    # Since port mapping is done, if we observe in docker compose file - will are tweaking the usual url
+    url = 'http://businessmicroservice:8901/currentmainstatusdockercompose' # Using 8901 as that is where we are turning on our main app server when we use Dockerfile or docker-compose... Since it is inter-service communication inside container itself so our url is slightly difference - more details in readme
+    response = requests.get(url)
+    print(f"Status of main app server: {response.status_code}")
+    data = json.loads(response.text)
+    return data
 
 
 ##################################################################

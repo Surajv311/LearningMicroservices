@@ -22,12 +22,12 @@ COPY . /$APP_HOME
 RUN pip install --no-cache-dir -r requirements.txt
 # Install any needed packages specified in requirements.txt
 
-EXPOSE 8900
-# Make port 8900 available to the world outside this container - Note that EXPOSE keyword is just for documentation in Dockerfile and does not have any functional impact. The actual port mapping is determined by the -p flag in the docker run command. This flag specifies the host-to-container port mapping.
+EXPOSE 8900 8901
+# Make port 8900 & 8901 available to the world outside this container - Note that EXPOSE keyword is just for documentation in Dockerfile and does not have any functional impact. The actual port mapping is determined by the -p flag in the docker run command. This flag specifies the host-to-container port mapping.
 
 ## Now 2 ways to run the FastAPI application code present in app.py:
 # CMD ["./run-server.sh"] # (Under Testing as getting errors using podman, docker not able to use ~ Error: preparing container for attach: crun: open executable: Permission denied: OCI permission denied) Way 1: Run app.py when the container launches; Check the .sh file defined in repo which has the command to execute when container runs
-CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Another way; Note that Using sh -c in the CMD instruction of a Dockerfile allows you to execute a shell command. This can be particularly useful when you need to perform tasks like setting environment variables, running complex commands, or dynamically configuring command-line arguments. sh calls the program sh as interpreter and the -c flag means execute the following command as interpreted by this program. In Ubuntu, sh is usually symlinked to /bin/dash, meaning that if you execute a command with sh -c the dash shell will be used to execute the command instead of bash.
+# CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Way 2: Note that Using sh -c in the CMD instruction of a Dockerfile allows you to execute a shell command. This can be particularly useful when you need to perform tasks like setting environment variables, running complex commands, or dynamically configuring command-line arguments. sh calls the program sh as interpreter and the -c flag means execute the following command as interpreted by this program. In Ubuntu, sh is usually symlinked to /bin/dash, meaning that if you execute a command with sh -c the dash shell will be used to execute the command instead of bash.
 
 ## Cases: We have 3 moving parts here: Host machine which is my macbook currently, in the cloud world it could be an EC2 machine, Container named bmservicecontainer running in the host machine - can be seen in Podman/Docker Desktop, FastAPI App server running inside the container. There are few things to understand here:
 # First understand host vs port: A host is a computer or other device connected to a network that provides resources, services, and applications to users or other devices on the network. It is identified by an IP address (IPv4 or IPv6) and optionally a domain name. In computer networking, localhost (meaning "this computer") is the standard hostname given to the address of the loopback network interface. Localhost always translates to the loopback IP address 127.0.0.1 in IPv4. A port is a virtual endpoint for communication in networking, used to identify a specific process or service running on a host. Ports allow multiple network services to coexist on a single host by distinguishing traffic intended for different services or applications. Eg: For an app, say userLogin service and userBlocking service - both existing in the same machine (say EC2 machine), but being exposed via different ports in that machine. Host is a global identifier in a network. Port is local identifier on a specific host.
@@ -59,7 +59,20 @@ CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port 8900 --reload"] # Anothe
 ## Conclusion: Combination 1 is way to go so using command: podman run -p 4500:8900 --name bmservicecontainer bmserviceimage and host 0.0.0.0
 
 ## Note eg: Incase we want to run main.py file which is inside sampleService folder, we will give the path in command as expected from fastapi
-CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
+# CMD ["sh", "-c", "uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
+
+# Another learning 1: We could also segregate the "sh", "-c" using ENTRYPOINT command in docker; So we could define:
+# ENTRYPOINT ["sh", "-c"] # And then below:
+# CMD ["uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
+# The ENTRYPOINT specifies a command that will always be executed when the container starts. The CMD specifies arguments that will be fed to the ENTRYPOINT.
+
+# Another learning 2: If we want to execute multiple commands in CMD, we should use &&; Eg: CMD ["echo 'Starting the application...' && uvicorn app:app --host 0.0.0.0 --port 8000"]
+
+# Another learning 3: We can have only 1 CMD command instruction and 1 ENTRYPOINT command instruction in dockerfile - if we define it 2 times, the latest one will get executed/may give errors - keep in mind.
+
+# We apply all our learnings from above and run the businessMicroservice and sampleService inside it on different ports to have full fledged container running
+ENTRYPOINT ["sh", "-c"]
+CMD ["uvicorn app:app --host 0.0.0.0 --port 8900 --reload --reload & uvicorn sampleService.main:app --host 0.0.0.0 --port 8901 --reload"]
 
 ###################################################################################################
 # Note:

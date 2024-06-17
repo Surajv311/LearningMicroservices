@@ -520,12 +520,44 @@ To build the compose file: `docker-compose build` (or `podman-compose build`). N
 To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode add `-d` flag. 
 Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or podman)
 To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
+Note that in docker file I have made the CMD command to run both app.py fastapi server as well as main.py fastapi server. Though we won't be able to get the status in the usual way from app.py to main.py; Same is objective in next task.  
 
-**Task9**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
+**Task9**: Ensure you are able to get status of main.py server in sampleService from app.py service from the docker-compose file?
+If we see the current way in which we get status of main app server is: 
+```
+@app.get("/mainappstatus")
+def get_other_server_status():
+    url = 'http://127.0.0.1:8001/currentStatus' # Note that endpoint is camelCase, same is expected when typing in url/testing via postman
+    response = requests.get(url)
+    print(f"Status of main app server: {response.status_code}")
+    data = json.loads(response.text)
+    return data
+```
+But now, since we are considering spinning up the multiple fastapi servers inside the container - to be able to access them from our host machine (i.e macbook) - we need to be able to map a host machine port to that service port, and then anyways we are aware of the concept of docker bridge network, etc., it will be able to get the status. 
+Changes to do the same have been made in the docker compose file. 
+To explain in other way: 
+In Docker Compose, the ports directive is used to map ports from the host machine to the container. This allows services running inside the container to be accessible from the host machine.
+Mapping ports is essential because containers are isolated environments, and by default, the services running inside them are not accessible from the outside world. By mapping a container's port to a port on the host machine, you make the service inside the container accessible from outside the container, using the host's IP address and the mapped port.
+If we observe current docker-compose file:
+"4500:8900": This maps port 8900 inside the container to port 4500 on the host machine. It means that if you access http://localhost:4500 from browser/postman on your host machine, it will be directed to the service running on port 8900 inside the container.
+Then - Change that we made: "4501:8901": This maps port 8901 inside the container to port 4501 on the host machine. It means that if you access http://localhost:4501 from browser/postman on your host machine, it will be directed to the service running on port 8901 inside the container.
+If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them:
+Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: http://localhost:4500
+For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: http://localhost:4501
+This is the case when we are acessing them from our browser/postman. 
+But now, if I want to check the health of main.py server from app.py server - remember both of them are running in the same container environment - so the request in code will be from one port to another inside the container itself not on host machine. 
+This is an inter-service communication - for this we leverage docker (or podman) compose’s internal DNS resolution, allowing one service to communicate with another by using its service name.
+Hence the url we hit to changed to: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`
+To reiterate simply, to access main.py app server - there are 2 ways: 
+One, we type-in the url from our browser/postman (which is host machine) and access the main.py server running inside container - which we did by port mapping 4501:8901. 
+Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
 
-**Task10**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+**Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
 
-**Task11**: Setup a NoSQL db like mongo db and health check mongodb service?  
+
+**Task11**: Run the businessMicroservice container in 2 different ports. And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+
+**Task12**: Setup a NoSQL db like mongo db and health check mongodb service?  
 
 
 --------------------------------------
