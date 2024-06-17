@@ -13,4 +13,4 @@ ENTRYPOINT ["sh", "-c"]
 CMD ["uvicorn app:app --host 0.0.0.0 --port 6800 --reload"]
 
 
-## Image frpConsumerMicroserviceDockerSrj maintained by: Suraj Verma <github: surajv311> - Created as a part of building and learning about microservices: https://github.com/surajvm1/LearningMicroservices
+## Image frpconsumermicroservicedockersrj maintained by: Suraj Verma <github: surajv311> - Created as a part of building and learning about microservices: https://github.com/surajvm1/LearningMicroservices
