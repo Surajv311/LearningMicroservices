@@ -567,14 +567,19 @@ In businessMicroservice: Defined `/bmserviceserverstatus` to return response whe
 In consumerMicroservce: From host machine I hit `/bmservicestatus` endpoint to get `/bmserviceserverstatus` defined in businessMicroservice
 ALERT NOTE: Upon running earlier command: `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` and hitting `http://0.0.0.0:3500/bmservicestatus` on browser/postman did not yield me any response from other container. Why?: It was because the containers running via compose are on a different network. Hence I need to connect the container to that network; It can be done by running (docker/podman): 
 `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` - network added. (Note rebuild image and then run, also ensure the directory you are building your dockerfile and all - don't mess up here)
-Note that - we can also imagine coupling the consumerMicroservice inside the same docker-compose file as well specifiying the path (build context as something like `./consumerMicroservice` than giving `.`) and have all services - businessMicroservice, postgres, redis, etc running up altogether. But we are restricting now as a fundamental understanding has been developed by this far and we can try avoiding cluttering things more... 
+Note that - we can also imagine coupling the consumerMicroservice inside the same docker-compose file as well specifying the path (build context as something like `./consumerMicroservice` than giving `.`) and have all services - businessMicroservice, postgres, redis, etc running up altogether. But we are restricting now as a fundamental understanding has been developed by this far and we can try avoiding cluttering things more... 
 
-**Task11**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+**Task11**: Publish the docker-compose file having businessMicroservice, postgres, redis to dockerhub and check if another developer can pull the image and run it on their machine?
 
-**Task12**: Setup a NoSQL db like mongo db and health check mongodb service?  
 
-**Task13**: Build CRUD operations in databases (postgres, redis, mongodb) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+**Task12**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+Should I define multiple services in docker compose file and then individually ping them for this or is there another way? 
 
+**Task13**: Setup a NoSQL db like mongodb via docker and health check mongodb service?  
+
+**Task14**: Build CRUD operations in databases (postgres, redis, mongodb) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+
+**Task15**: Setup Kafka locally or via docker. Create JSON events from the service and publish it to Kafka service?  
 
 
 --------------------------------------

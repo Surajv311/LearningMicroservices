@@ -2,7 +2,7 @@
 FROM python:3.9-slim
 # Use an official Python runtime as a parent image. Simply put it has base OS image like say linux/ubuntu and on top of it it has Python related dependencies installed, combined piece is served to us in this image.
 
-LABEL maintainer="suraj.verma@getsimpl.com"
+LABEL maintainer="Suraj Verma, Github: surajv311"
 
 ENV APP_HOME /businessmicroservice
 # Set environment variables

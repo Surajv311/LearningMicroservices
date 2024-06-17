@@ -163,3 +163,4 @@ bin/
 *.gitattributes
 include/
 *.cfg
+*.DS_STORE
