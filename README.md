@@ -588,16 +588,18 @@ podman push 23ed0e8617b5 docker://docker.io/surajv311/frpbusinessmicroservicedoc
 ```
 Link: https://hub.docker.com/r/surajv311/frpbusinessmicroservicedockersrj
 
+**Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
 
-**Task12**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
+
+
+**Task13**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
 Should I define multiple services in docker compose file and then individually ping them for this or is there another way? 
 
-**Task13**: Setup a NoSQL db like mongodb via docker and health check mongodb service?  
-
-**Task14**: Build CRUD operations in databases (postgres, redis, mongodb) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+**Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
 
 **Task15**: Setup Kafka locally or via docker. Create JSON events from the service and publish it to Kafka service?
 
+**TaskXYZ**: Add test cases in project 
 
 
 ------------------------------------
@@ -623,6 +625,8 @@ assert user.id == 123
 assert isinstance(user.id, int)
 
 
+
+https://www.tutorialspoint.com/python/python_inner_classes.htm
 https://stackoverflow.com/questions/12857604/python-how-to-check-if-redis-server-is-available
 https://www.youtube.com/watch?v=RdPYA-wDhTA
 https://hub.docker.com/_/postgres

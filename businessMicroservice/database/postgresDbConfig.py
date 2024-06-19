@@ -19,7 +19,7 @@ POSTGRES_DB = "fapidb"
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}" # Way 3: Explicitly defining the db url. We are using port 7002 as we have defined when we spawned up the postgres container - remember readme doc step.
 engine = _sql.create_engine(DATABASE_URL)
 SessionLocal = _orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = _declarative.declarative_base()
+Base = _declarative.declarative_base() # database.Base is commonly associated with SQLAlchemy, which is a popular SQL toolkit and Object-Relational Mapping (ORM) library for Python. In SQLAlchemy, Base is usually defined using the declarative_base function. This function is used to create a base class for declarative class definitions. Declarative class definitions are a way to define database tables in Python by creating classes.
 postgres_table = "tpsqltable" # this table is created in the db; when we logged in to the postgres container; we are defining it in the current config iself, to be able to use it globally
 
 #################################################################################
@@ -45,5 +45,15 @@ if os.getenv("APP_MODE_DOCKER", "None") == 'docker_compose_mode': # we have defi
 DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 engine = _sql.create_engine(DATABASE_URL)
 SessionLocal = _orm.sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = _declarative.declarative_base()
+Base = _declarative.declarative_base() # database.Base is commonly associated with SQLAlchemy, which is a popular SQL toolkit and Object-Relational Mapping (ORM) library for Python. In SQLAlchemy, Base is usually defined using the declarative_base function. This function is used to create a base class for declarative class definitions. Declarative class definitions are a way to define database tables in Python by creating classes.
 postgres_table = "tpsqltable"
+
+########################
+# To complete Task12
+# below function would ensure session continues until a function is exited - basically manages lifecycle of database session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

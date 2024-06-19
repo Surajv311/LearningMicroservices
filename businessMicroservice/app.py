@@ -167,6 +167,7 @@ def get_bmservice_server_status_docker():
     return {"businessMicroservice FastAPI app.py server status: Healthy"}
 
 ##################################################################
+# To complete Task12
 
 
 ##################################################################
