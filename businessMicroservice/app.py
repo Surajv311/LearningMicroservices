@@ -169,6 +169,48 @@ def get_bmservice_server_status_docker():
 ##################################################################
 # To complete Task12
 
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why done ~ https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
+from models.postgresModels import UserModel # has SQLAlchemy ORM models
+from schemas.postgresSchemas import UserBaseSchema, UserCreateSchema, UserUpdateSchema, UserSchema # has Pydantic models
+from operations.crudOperationsPostgresdb import get_user, get_users, create_user, update_user, delete_user
+from database.postgresDbConfig import DATABASE_URL, engine, SessionLocal, Base, postgres_table, get_db
+from datetime import datetime
+
+Base.metadata.create_all(bind=engine) # The models.Base.metadata.create_all(bind=engine) line is a convenient and powerful way to ensure your database schema is created and kept in sync with your SQLAlchemy models. It abstracts away the need to write raw SQL for table creation, making your code cleaner and more maintainable.
+
+@app.post("/users/", response_model=UserSchema)
+# FastAPI’s Response Models enable you to articulate the data structure that your API will provide in response to requests. When a client makes an HTTP request to the server, the server is required to send relevant data back to the client. The Response Models play a vital role in defining the details of this data model, ensuring consistency in API responses.
+def create_user_postApi(user: UserCreateSchema, db: Session = Depends(get_db)):
+    return create_user(db=db, user=user)
+
+@app.get("/users/", response_model=list[UserSchema])
+def read_users_getApi(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    users = get_users(db, skip=skip, limit=limit)
+    return users
+
+@app.get("/users/{user_id}", response_model=UserSchema)
+def read_user_getApi(user_id: int, db: Session = Depends(get_db)):
+    db_user = get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.put("/users/{user_id}", response_model=UserSchema)
+def update_user_putApi(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)):
+    db_user = update_user(db=db, user_id=user_id, user=user)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.delete("/users/{user_id}", response_model=UserSchema)
+def delete_user_deleteApi(user_id: int, db: Session = Depends(get_db)):
+    db_user = delete_user(db=db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
 
 ##################################################################
 

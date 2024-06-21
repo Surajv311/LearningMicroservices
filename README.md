@@ -712,7 +712,7 @@ https://medium.com/@augustineozor/understanding-docker-bridge-network-6e499da50f
 https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose
 https://stackoverflow.com/questions/54148999/where-are-docker-images-stored-physically-on-macos
 https://spacelift.io/blog/docker-compose
-
+https://stackoverflow.com/questions/630453/what-is-the-difference-between-post-and-put-in-http?noredirect=1&lq=1
 
 
 ------------------------------------

@@ -2,9 +2,10 @@ from sqlalchemy import Column, Integer, String, Text, TIMESTAMP
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why done ~ https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
-from database.postgresDbConfig import Base # Base is ORM we use
+from database.postgresDbConfig import Base # Base is ORM we use from sqlalchemy
 
-class User(Base):
+#For Task12
+class UserModel(Base):
     # We know Base is the ORM we are using
     """
     From Readme we know how our sql table looks like:
