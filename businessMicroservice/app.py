@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 from sqlalchemy import *
 from database.postgresDbConfig import engine, SessionLocal, postgres_table
-from database.redisDbConfig import rd
+from database.redisDbConfig import rd, redis_client
 import asyncio
 
 app = FastAPI()
@@ -167,7 +167,7 @@ def get_bmservice_server_status_docker():
     return {"businessMicroservice FastAPI app.py server status: Healthy"}
 
 ##################################################################
-# To complete Task12
+# To complete Task12 - Postgres part
 
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -177,6 +177,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why d
 from models.postgresModels import UserModel # has SQLAlchemy ORM models
 from schemas.postgresSchemas import UserBaseSchema, UserCreateSchema, UserUpdateSchema, UserSchema # has Pydantic models
 from operations.crudOperationsPostgresdb import get_user, get_users, create_user, update_user, delete_user
+from operations.crudOperationsRedisdb import get_user_redis, create_user_redis, update_user_redis, delete_user_redis
 from database.postgresDbConfig import DATABASE_URL, engine, SessionLocal, Base, postgres_table, get_db
 from datetime import datetime
 
@@ -215,7 +216,34 @@ def delete_user_deleteApi(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 
-##################################################################
+####--------------------------------------------------------------####
+# To complete Task12 (CONTINUED) - Redis part
+# Similar to taking some reference from postgres part, rest is Redis specific function usecase
+
+@app.post("/redisusers/", response_model=UserSchema)
+def create_user_postApi_redis(user: UserCreateSchema):
+    return create_user_redis(user=user)
+
+@app.get("/redisusers/{user_id}", response_model=UserSchema)
+def read_user_getApi_redis(user_id: int):
+    db_user = get_user_redis(user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.put("/redisusers/{user_id}", response_model=UserSchema)
+def update_user_putApi_redis(user_id: int, user: UserUpdateSchema):
+    db_user = update_user_redis(user_id=user_id, user=user)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.delete("/redisusers/{user_id}", response_model=UserSchema)
+def delete_user_deleteApi_redis(user_id: int):
+    db_user = delete_user_redis(user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
 
 
 ##################################################################

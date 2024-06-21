@@ -204,11 +204,12 @@ Commands to run inside postgres container to setup/play around:
 docker exec -it postgreslocal bash # to get into container of postgres, we have named container postgreslocal as we know
 ## Or to use podman: podman exec -it postgreslocal bash
 
-root@e4fb5a81ca46:/# psql -U postgresdockerlocal # we know the user name is postgresdockerlocal
+root@e4fb5a81ca46:/# psql -U postgresdockerlocal # we know the user name is postgresdockerlocal. Connect to the database as the user username instead of the default.
 
 ## Creating a database, later we create tables inside it
 postgresdockerlocal-# create database fapidb; 
-## Note that the semi colon is very important when you execute the commands else it wont work)
+## Note that the semi colon is very important when you execute the commands else it wont work
+## Also to enter the database shell directly from user you can use (else below commands for step-by-step understanding): `psql -U postgresdockerlocal -d fapidb`
 
 # Creating another user and trying to create tables/db using that 
 postgresdockerlocal-# CREATE USER postgresdluser WITH PASSWORD '1234'; 
@@ -236,6 +237,8 @@ fapidb=# CREATE TABLE tpsqltable(ID INT PRIMARY KEY NOT NULL, NAME TEXT NOT NULL
 ## But above command gave me error - despite debugging different ways, giving all permissions, still error persisted, so I changed my new user to root user - Not a good way to do, but it is what it is... 
 
 postgresdockerlocal=# ALTER DATABASE fapidb OWNER TO postgresdluser; ## as above changes were not working, despite my new user, it was not getting access/privileges, hence changed the db owner
+# Hence, if now I have to enter the database bash directly from terminal from updated owner: `psql -U postgresdluser -d fapidb`
+
 postgresdockerlocal=# \c fapidb postgresdluser (to connect to our database with the given user) 
 ### Note: To connect to database with superuser: postgresdockerlocal=# \c fapidb
 fapidb-# \dt (to list down all tables)
@@ -589,9 +592,15 @@ podman images  (to select the image_id and run below command)
 podman push 23ed0e8617b5 docker://docker.io/surajv311/frpbusinessmicroservicedockersrj:1.0.0
 ```
 Link: https://hub.docker.com/r/surajv311/frpbusinessmicroservicedockersrj
+As a sidenote, if we see, our postgres container is named `postgreslocalservice-1` in Docker desktop/Podman, though in our docker compose file we have named container as `container_name: postgreslocalcontainer`.
+(Discussed before): 
+To get into container bash, use the defined name only, i.e: (docker/podman) `podman exec -it postgreslocalcontainer bash`
+To get into the db inside container: `psql -U postgresdluser -d fapidb`
+Table query: `fapidb=# select * from tpsqltable limit 10;`
 
 **Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
 
+docker-compose up <service_name> - to run an individual component of docker compose 
 
 
 **Task13**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 

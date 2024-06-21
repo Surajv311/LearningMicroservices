@@ -29,3 +29,5 @@ class UserSchema(UserBaseSchema):
         # Interesting article: https://www.reddit.com/r/FastAPI/comments/lmywl6/orm_or_pydantic_model/
         # Recall we use Base ORM from sqlalchemy, to have better type validation we are using pydantic ORM here as well - with orm_mode True pydantic knows if any translation needs to be done for validation
         orm_mode = True
+
+## NOTE: The above schemas are commonly used for both Postgres CRUD APIs and Redis CRUD APIs construction.
