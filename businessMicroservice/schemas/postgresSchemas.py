@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-#For Task12
+#To complete Task12
 class UserBaseSchema(BaseModel):
     # Pydantic models are simply classes which inherit from BaseModel and define fields as annotated attributes. A Pydantic BaseModel is a class that defines how your data looks like and the validation requirements it needs to pass in order to be valid.
     name: str

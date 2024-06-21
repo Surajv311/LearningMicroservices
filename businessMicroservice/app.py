@@ -171,6 +171,8 @@ def get_bmservice_server_status_docker():
 
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
+import sys
+import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why done ~ https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 from models.postgresModels import UserModel # has SQLAlchemy ORM models
 from schemas.postgresSchemas import UserBaseSchema, UserCreateSchema, UserUpdateSchema, UserSchema # has Pydantic models
@@ -185,6 +187,7 @@ Base.metadata.create_all(bind=engine) # The models.Base.metadata.create_all(bind
 def create_user_postApi(user: UserCreateSchema, db: Session = Depends(get_db)):
     return create_user(db=db, user=user)
 
+# Notice previous was POST API call with /users endpoint, now we have GET API call
 @app.get("/users/", response_model=list[UserSchema])
 def read_users_getApi(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = get_users(db, skip=skip, limit=limit)

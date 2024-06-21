@@ -36,7 +36,7 @@ if os.getenv("APP_MODE_DOCKER", "None") == 'docker_mode': # this condition means
 
 # For Task8
 if os.getenv("APP_MODE_DOCKER", "None") == 'docker_compose_mode': # we have defined this variable in the compose file
-    POSTGRES_HOST = os.getenv('POSTGRES_HOST') # fetching variables using os.getenv() as we have defined them in compose file so the variables will exist in the container environment and can be picked up. If we log into our application container shell - we can do printenv and see all variables
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST') # fetching variables using os.getenv() as we have defined them in compose file for fastapi env so the variables will exist in the container environment and can be picked up. If we log into our application container shell - we can do printenv and see all variables
     POSTGRES_PORT = os.getenv('POSTGRES_PORT')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
@@ -57,3 +57,5 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Other values like DATABASE_URL, engine, etc., will be picked up when I run the docker compose file as usual

@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+import sys
+import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__))) # Note: Reason why done ~ https://stackoverflow.com/questions/4383571/importing-files-from-different-folder
 from models.postgresModels import UserModel # has SQLAlchemy ORM models
 from schemas.postgresSchemas import UserBaseSchema, UserCreateSchema, UserUpdateSchema, UserSchema # has Pydantic models
