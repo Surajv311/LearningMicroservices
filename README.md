@@ -612,6 +612,8 @@ Task complete, we can check the corresponding app.py, config and schema files.
 
 **Task17**: Add poetry to lock the packages?
 
+Bugs found: Data not persisintg in vole and vanishing whne contnainer restarts why?
+
 ------------------------------------
 
 References/ Other notes: (refactor this part later...)
