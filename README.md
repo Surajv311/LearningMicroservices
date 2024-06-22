@@ -725,6 +725,7 @@ https://spacelift.io/blog/docker-compose
 https://stackoverflow.com/questions/630453/what-is-the-difference-between-post-and-put-in-http?noredirect=1&lq=1
 https://www.javatpoint.com/why-has-my-ip-address-changed
 https://realpython.com/dependency-management-python-poetry/
+https://www.geeksforgeeks.org/how-to-add-python-poetry-to-an-existing-project/
 
 ------------------------------------
 
