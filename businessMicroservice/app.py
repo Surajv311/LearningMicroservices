@@ -186,34 +186,39 @@ Base.metadata.create_all(bind=engine) # The models.Base.metadata.create_all(bind
 @app.post("/users/", response_model=UserSchema)
 # FastAPI’s Response Models enable you to articulate the data structure that your API will provide in response to requests. When a client makes an HTTP request to the server, the server is required to send relevant data back to the client. The Response Models play a vital role in defining the details of this data model, ensuring consistency in API responses.
 def create_user_postApi(user: UserCreateSchema, db: Session = Depends(get_db)):
-    return {"Postgres POST API call done": create_user(db=db, user=user)}
+    print('Postgres POST API call done')
+    return create_user(db=db, user=user)
 
 # Notice previous was POST API call with /users endpoint, now we have GET API call
 @app.get("/users/", response_model=list[UserSchema])
 def read_users_getApi(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = get_users(db, skip=skip, limit=limit)
-    return {"Postgres GET API call for all data done": users}
+    print('Postgres GET API call for all users done')
+    return users
 
 @app.get("/users/{user_id}", response_model=UserSchema)
 def read_user_getApi(user_id: int, db: Session = Depends(get_db)):
     db_user = get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Postgres GET API call for a user done":db_user}
+    print('Postgres GET API call for a user done')
+    return db_user
 
 @app.put("/users/{user_id}", response_model=UserSchema)
 def update_user_putApi(user_id: int, user: UserUpdateSchema, db: Session = Depends(get_db)):
     db_user = update_user(db=db, user_id=user_id, user=user)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Postgres PUT API call for a user done":db_user}
+    print('Postgres PUT API call for a user done')
+    return db_user
 
 @app.delete("/users/{user_id}", response_model=UserSchema)
 def delete_user_deleteApi(user_id: int, db: Session = Depends(get_db)):
     db_user = delete_user(db=db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Postgres DELETE API call done": db_user}
+    print('Postgres DELETE API call for a user done')
+    return db_user
 
 
 ####--------------------------------------------------------------####
@@ -227,28 +232,32 @@ def create_user_postApi_redis(user: UserCreateSchema):
 @app.get("/redisusers/", response_model=list[UserSchema])
 def read_users_getApi(skip: int = 0, limit: int = 10):
     users = get_users_redis(skip=skip, limit=limit)
-    return {"Redis GET API call for users done": users}
+    print('Redis GET API call done')
+    return users
 
 @app.get("/redisusers/{user_id}", response_model=UserSchema)
 def read_user_getApi_redis(user_id: int):
     db_user = get_user_redis(user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Redis GET API call for a user done": db_user}
+    print('Redis GET API call for a user done')
+    return db_user
 
 @app.put("/redisusers/{user_id}", response_model=UserSchema)
 def update_user_putApi_redis(user_id: int, user: UserUpdateSchema):
     db_user = update_user_redis(user_id=user_id, user=user)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Redis PUT API call done": db_user}
+    print('Redis PUT API call for a user done')
+    return db_user
 
 @app.delete("/redisusers/{user_id}", response_model=UserSchema)
 def delete_user_deleteApi_redis(user_id: int):
     db_user = delete_user_redis(user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    return {"Redis DELETE API call done": db_user}
+    print('Redis DELETE API call for a user done')
+    return db_user
 
 
 ##################################################################
