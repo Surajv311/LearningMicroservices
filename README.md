@@ -550,7 +550,7 @@ Then - Change that we made: "4501:8901": This maps port 8901 inside the containe
 If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them:
 Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: http://localhost:4500
 For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: http://localhost:4501
-This is the case when we are acessing them from our browser/postman. 
+This is the case when we are accessing them from our browser/postman. 
 But now, if I want to check the health of main.py server from app.py server - remember both of them are running in the same container environment - so the request in code will be from one port to another inside the container itself not on host machine. 
 This is an inter-service communication - for this we leverage docker (or podman) compose’s internal DNS resolution, allowing one service to communicate with another by using its service name.
 Hence the url we hit to changed to: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`
@@ -601,6 +601,36 @@ Table query: `fapidb=# select * from tpsqltable limit 10;`
 
 **Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
 Task complete, we can check the corresponding app.py, config and schema files. 
+Let us revisit the flow of the way project is developed: 
+First: 
+- We ran our fastapi servers inside host machine at ports 8000 and 8001 using commands: `uvicorn app:app --port 8000 --reload`
+
+Second: 
+- We spawn up Redis and Postgres docker containers on same host machine using commands like (docker/podman): `docker run --name redislocal -p 7001:6379 redis`, `docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres`.
+- Understand we can access them from port 7001/7002 of host machine, but if we hit directly - we won't get response as it's a database server, not web server. The postgres url we hit from fastapi server running on port 8000: `POSTGRES_DB_URL=postgresql://postgresdluser:1234@localhost:7002/fapidb`. Observe the host address: `localhost:7002`
+
+Third:
+- Tested async-sync versions of code, load tested APIs, populated postgres table with 1M+ rows, etc. 
+
+Fourth: 
+- Containerized the fastapi server. So now, instead of it running on host, it will run a level below the surface which is a container. 
+- Created Dockerfile for the fastapi app. Exposed a port with which I can communicate from host/browser/postman to the server running inside the container (port mapping).
+- Also, explicitly update Dockerfile for the container to except request from outside interface by adding a flag in uvicorn command: `--host 0.0.0.0`
+- Commands (docker/podman): `podman build --no-cache -t bmserviceimage .`, `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`
+
+Fifth: 
+- Ensure my dockerized fastapi app server running inside container can interact with other postgres/redis containers. 
+- Understand that now the command ground is the host - having 3 running containers which have to interact with eachother. Earlier, our fastapi app was running on browser/host itself which is kind of on the surface than a level beneath i.e container. 
+- We had to ensure that now Redis/Postgres hosts are also updated - so postgres db url became: `POSTGRES_DB_URL=postgresql://postgresdluser:1234@192.168.29.72:7002/fapidb`. Observe we switched from localhost to host IP: `192.168.29.72`. So port `7002` exposed of the machine to enter the microservice/container.  
+- Now the flow is like to check the db status/health: I hit a url in my browser/host/postman with host 4500/<api>. This 4500 port is mapped to a port inside container where my fastapi server is running - so the request travels to port 8900 (port mapping) inside container. Now the container wouldn't directly allow any request from any entity, hence recall we had whitelisted requests by specifically adding `-host 0.0.0.0` keyword in uvicorn fastapi app when it is spawn up in Dockerfile (Note this is the default host that needs to be added - I tried making host as 127.0.0.1 or a different one, but that doesn't work - so basically this is the only host port which is allowed so when I hit api from my browser or postman - I do not hit 127.0.0.1/<api> or localhost/<api>, rather 0.0.0.0/<api> - as this is whitelisted). So container allows request from host to hit the server. Now, fastapi server has an API endpoint say: `syncphealth` to check postgres health. When I hit this API from 0.0.0.0/<syncphealth>; if you check the code, upon hitting the api it initiates a postgres db session from SessionLocal(). Inside SessionLocal() code, another switch happens which was the host port is changed from localhost to machine ip address (check previous point), thereby brining our service on common ground which is the host machine. Docker handles this internally using NAT, Docker bridge, etc, and hence our fastapi server running inside a container is able to hit the postgres container running on host - as url is updated to leverage host machine address. Similar, case for redis. 
+
+Sixth:
+- Exposed/ spawn up another service inside same container running on port: `4501:8901`. So 8900 service interacted with 8901 service. 
+
+Seventh:
+- Docker composed fastapi container (businessMicroservice), postgres container, redis container in the same network named `bmservice_network`. 
+- Later created another microservice (consumerMicroservice mapped from `3500:6800` host-container service port mapping) but it could not directly hit the fastapi/postgres/redis containers as they were a part of a network. 
+- I had to spawn up the consumerMicroservice in same network using (docker/podman): `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` and was able to hit the APIs. 
 
 **Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
 
@@ -613,6 +643,7 @@ Task complete, we can check the corresponding app.py, config and schema files.
 **Task17**: Add poetry to lock the packages?
 
 Bugs found: Data not persisintg in vole and vanishing whne contnainer restarts why?
+bug CMD ["./run-server.sh"] - does not work
 
 ------------------------------------
 
@@ -620,7 +651,7 @@ References/ Other notes: (refactor this part later...)
 (WIP part...)
 
 https://dbeaver.io/ - dbeaver to see postgres gui
-
+https://stackoverflow.com/questions/20778771/what-is-the-difference-between-0-0-0-0-127-0-0-1-and-localhost
 pydantic: 
 One of the primary ways of defining schema in Pydantic is via models. Models are simply classes which inherit from pydantic.BaseModel and define fields as annotated attributes.
 Pydantic is the most widely used data validation library for Python.
