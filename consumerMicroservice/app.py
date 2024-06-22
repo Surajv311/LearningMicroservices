@@ -85,5 +85,8 @@ def delete_users(user_id:int):
     data = json.loads(response.text)
     return data
 
+"""
+Similar like above we can built APIs to access Redis CRUD APIs in businessMicroservice
+"""
 
 ###########################################################################

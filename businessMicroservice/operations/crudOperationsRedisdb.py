@@ -4,9 +4,8 @@ from datetime import datetime
 import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from database.redisDbConfig import redis_client
-## **Note below that we are importing the same schemas & models we used for validation in Postgres, here as well.**
+## **Note below that we are importing the same schemas we used for validation in Postgres, here as well.**
 from schemas.postgresSchemas import UserBaseSchema, UserCreateSchema, UserUpdateSchema, UserSchema # has Pydantic models
-from models.postgresModels import UserModel
 
 # To complete Task12
 def create_user_redis(user: UserCreateSchema):

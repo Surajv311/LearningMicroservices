@@ -526,6 +526,7 @@ To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode
 Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or `podman-compose up --build`)
 To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
 Note that in docker file I have made the CMD command to run both app.py fastapi server as well as main.py fastapi server. Though we won't be able to get the status in the usual way from app.py to main.py; Same is objective in next task.  
+To run an individual component of docker compose (docker/podman): `docker-compose up <service_name>`
 
 **Task9**: Ensure you are able to get status of main.py server in sampleService from app.py service from the docker-compose file?
 If we see the current way in which we get status of main app server is: 
@@ -599,19 +600,17 @@ To get into the db inside container: `psql -U postgresdluser -d fapidb`
 Table query: `fapidb=# select * from tpsqltable limit 10;`
 
 **Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+Task complete, we can check the corresponding app.py, config and schema files. 
 
-docker-compose up <service_name> - to run an individual component of docker compose 
-
-
-**Task13**: Run the businessMicroservice container in 2 different ports (basically 2 instances of the service). And your consumerMicroservice app should be pinging root server of businessMicroservice app in round-robin fashion of each service; In case it dies in 1 port, then redirect all request to other port - This pretty much explains how a simple load balancer would work? 
-Should I define multiple services in docker compose file and then individually ping them for this or is there another way? 
+**Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
 
 **Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
 
-**Task15**: Setup Kafka locally or via docker. Create JSON events from the service and publish it to Kafka service?
+**Task15**: Setup Kafka manually or via docker on local. Create JSON events from a service and publish it to Kafka service?
 
-**TaskXYZ**: Add test cases in project 
+**Task16**: Add API test cases in the project? 
 
+**Task17**: Add poetry to lock the packages?
 
 ------------------------------------
 
