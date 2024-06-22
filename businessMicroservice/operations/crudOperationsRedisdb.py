@@ -16,7 +16,17 @@ def create_user_redis(user: UserCreateSchema):
     user_data['created_at'] = datetime.utcnow().isoformat() # creating another key in our existing dict
     user_key_redis = f'user:{redis_id}' # since redis is nosql db, assigning a key specific for redis to identify
     redis_client.set(user_key_redis, json.dumps(user_data)) # json dumps: Converts a subset of Python objects into a json string. Not all objects are convertible and you may need to create a dictionary of data you wish to expose before serializing to JSON.
-    return user_data
+    schema_validated_data = UserSchema(**user_data)
+    """
+    UserSchema(**user_data) will deserialize the JSON string into a dictionary, then unpack it into a UserSchema object. 
+    We are doing this because later the FastAPI code validates the same in pydantic for the endpoint.
+    Recall we have defined response_model=UserSchema, which means response should adhere to the UserSchema, same we are doing here as well
+    It can be done in other way like: 
+    deserialized_data = json.loads(user_data) ## loads() method can be used to parse a valid JSON string and convert it into a Python Dictionary.
+    deserialized_obj = UserSchema(id=deserialized_data["id"], name=deserialized_data["name"], type=deserialized_data["type"], phone=deserialized_data["phone"], address=deserialized_data["address"], created_at=deserialized_data["created_at"])            
+    Later, return deserialized_obj... 
+    """
+    return schema_validated_data
 
 def get_users_redis(skip: int = 0, limit: int = 10):
     user_keys_redis = redis_client.keys("user:*") # If we recall in above code we are setting redis keys like: user_key_redis = f'user:{redis_id}' -> then doing redis_client.set()
@@ -24,7 +34,9 @@ def get_users_redis(skip: int = 0, limit: int = 10):
     for key in user_keys_redis[skip: skip + limit]:
         user_data = redis_client.get(key)
         if user_data:
-            users.append(json.loads(user_data))
+            data = json.loads(user_data)
+            schema_validated_data = UserSchema(**data)
+            users.append(schema_validated_data) ## data validation being done for response_model
     return users
 
 def get_user_redis(user_id: int):
@@ -33,7 +45,8 @@ def get_user_redis(user_id: int):
     if user_data is None:
         return None
     data = json.loads(user_data)
-    return data
+    schema_validated_data = UserSchema(**data)
+    return schema_validated_data
 
 def update_user_redis(user_id: int, user: UserUpdateSchema):
     redis_key_format = f"user:{user_id}"
@@ -44,7 +57,8 @@ def update_user_redis(user_id: int, user: UserUpdateSchema):
     updated_data['id'] = user_id
     updated_data['created_at'] = json.loads(user_data)['created_at'] # extracting created_at from user_data which existed and adding it to updated_at data, which will later be serialized into a json string
     redis_client.set(redis_key_format, json.dumps(updated_data))
-    return updated_data
+    schema_validated_data = UserSchema(**updated_data)
+    return schema_validated_data
 
 def delete_user_redis(user_id: int):
     redis_key_format = f"user:{user_id}"
@@ -52,4 +66,5 @@ def delete_user_redis(user_id: int):
     if not user_data:
         return None
     redis_client.delete(redis_key_format)
-    return json.loads(user_data)
+    schema_validated_data = UserSchema(**json.loads(user_data))
+    return schema_validated_data
