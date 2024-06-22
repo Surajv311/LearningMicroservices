@@ -188,8 +188,9 @@ Base.metadata.create_all(bind=engine) # The models.Base.metadata.create_all(bind
 def create_user_postApi(user: UserCreateSchema, db: Session = Depends(get_db)):
     print('Postgres POST API call done')
     return create_user(db=db, user=user)
+    # Notice that we are returning the user whose data we POSTed as response object - ideally we could simply return a statement/string that POST call successful or so, but anyways we are returning an object. Note that this object/result returned is being validated via pydantic response_model=UserSchema, so if our response is not adhering we will get error. So like end-to-end validation is happening. Later in below example endpoints as well we are validating the API response from pydantic response models.
 
-# Notice previous was POST API call with /users endpoint, now we have GET API call
+# Notice previous was POST API call with /users endpoint, now we have GET API call with same /users - hence method is changing
 @app.get("/users/", response_model=list[UserSchema])
 def read_users_getApi(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = get_users(db, skip=skip, limit=limit)
