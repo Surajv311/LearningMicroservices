@@ -227,7 +227,8 @@ def delete_user_deleteApi(user_id: int, db: Session = Depends(get_db)):
 
 @app.post("/redisusers/", response_model=UserSchema)
 def create_user_postApi_redis(user: UserCreateSchema):
-    return {"Redis POST API call done": create_user_redis(user=user)}
+    print('Redis POST API call done')
+    return create_user_redis(user=user)
 
 @app.get("/redisusers/", response_model=list[UserSchema])
 def read_users_getApi(skip: int = 0, limit: int = 10):
