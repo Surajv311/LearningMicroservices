@@ -10,7 +10,7 @@
   - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, kind of acting like a load balancer.
   - More tasks defined in the project as we go down... 
 
-- Lonng term goal (brief)
+- Long term goal (brief)
   - The complexity of project will increase with time. We will have more scenarios to cover like: complicating APIs; publishing data to Kafka/Flink; having Debezium setup to capture CDC once we update postgres tables via our microservices, etc. Objective is to mimic how production systems work as closely as possible. Once, we are set locally, we can try running the infra on cloud systems.   
 
 **Note**: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts I have attached at the bottom of the Readme for reference. The code written in the project is covered with comments for easy-understanding. To understand the project one may have to oscillate between code comments and info in tasks in Readme. 
