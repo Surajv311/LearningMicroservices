@@ -8,20 +8,21 @@
   - We should be able to spin up multiple instances of the microservice running on different ports. There should be APIs which capture status of another port from a given port.
   - Later, `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `businessMicroservice`. In short, allow 2 microservices to communicate with one another. 
   - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, kind of acting like a load balancer.
+  - More tasks defined in the project as we go down... 
 
-- Future intention (rough)
-  - The complexity of project will increase with time. We will have more scenarios to cover like: publishing data to Kafka/Flink; Or having Debezium setup to capture CDC once we update postgres tables via our microservices, etc. 
-  - Objective is to mimic how production systems work as closely as possible. As a note, intention is to learn how services or systems interact locally, once, that is clear, understanding how things work in cloud would be much easier, as core concepts remain the same!.  
+- Lonng term goal (brief)
+  - The complexity of project will increase with time. We will have more scenarios to cover like: complicating APIs; publishing data to Kafka/Flink; having Debezium setup to capture CDC once we update postgres tables via our microservices, etc. Objective is to mimic how production systems work as closely as possible. Once, we are set locally, we can try running the infra on cloud systems.   
 
-Note: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts (and re-verified as well) I have attached at the bottom of the Readme for reference as well as in code pieces as comments. 
+**Note**: Some major errors I encountered, learnings, blogs/videos, little help from chatgpt in understanding concepts I have attached at the bottom of the Readme for reference. The code written in the project is covered with comments for easy-understanding. To understand the project one may have to oscillate between code comments and info in tasks in Readme. 
 
 ------------------------------------------------------
 
 ### Steps followed (Flow) in project: 
 
-Locally, created a directory called: `fastapiproject/` to have all project files saved. 
+#### Basic setup: 
 
-Necessary installations (mac):
+Locally, created a directory called: `fastapiproject/` to have all project files saved. Necessary installations (mac):
+
 ```
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\
 brew install pyenv
@@ -29,7 +30,8 @@ pyenv install 3.10.6
 python3
 pyenv versions
 ```
-And do ensure you have `pip` package manager installed and docker/podman installed to run containers. 
+
+Ensure you have `pip` package manager installed and docker/podman installed to run containers. 
 In this exercise, I have used docker in the beginning later switched to podman (Note all docker commands run same in podman, except instead of using `docker` keyword, use `podman` in commands)
 So do install docker, docker desktop, podman, docker compose, podman compose (compose utilities are different and should be installed separately - we learn more about them later)
 
@@ -46,22 +48,21 @@ Before starting project my Py version: Python 3.9.6
 We will work around developing `businessMicroservice` so activate the env. We can also activate `consumerMicroservice` though not using it now. 
 Open 2 terminals and `cd` into the directory for business & consumer service and activate the env. 
 In my case: (Eg)
-`cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/consumerMicroservice`
-`source bin/activate`
-`cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`
-`source bin/activate`
+- `cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/consumerMicroservice`, and then: `source bin/activate`
+- `cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`, and then: ``source bin/activate`
 
-Current focus on developing `businessMicroservice` once venv activated:
+Current focus is on developing `businessMicroservice`. Activate the venv (as shown above and then):
 
 Installing few packages: 
+
 ```
 pip install fastapi requests "uvicorn[standard]" SQLAlchemy==1.4.46 psycopg2-binary pydantic pandas redis
 ```
 
-Exporting the installed packages/dependencies in env in a requirements.txt file: 
-`pip freeze > requirements.txt`
+Exporting the installed packages/dependencies in env in a requirements.txt file: `pip freeze > requirements.txt`
 
-My current snapshot of packages based on commands ran earlier: 
+My current snapshot of packages on my local based on commands ran earlier: 
+
 ```
 annotated-types==0.5.0
 anyio==3.7.1
@@ -102,24 +103,27 @@ zipp==3.15.0
 
 We could have also defined packages in the txt file first and then run `pip install -r requirements.txt`. 
 
-Create core logic files: `touch main.py app.py`
+Create core logic files (created main & app py files): `touch main.py app.py`
 
 Writing boilerplate fastapi code in `main.py`: 
+
 ```
 Core logic: 
 @app.get("/")
 def health_check_root_endpoint():
     return {"Health check: main.py root server"}
 ```
-My current dir: `/Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`
-To run the app server on a port 8000 command used in env terminal: `uvicorn app:app --port 8000 --reload`
-Note in above case, the path where you execute the command and the file path are same. 
-Assume you are in a different path and want to run the server, it can also be done (same I have done here for learning purposes in this repo);
-To run the main app server on a port 8001 command used in env terminal: `uvicorn sampleService.main:app --port 8001 --reload`. You use `.` operator to give the path. 
+
+My current dir (got my running `pwd` in terminal): `/Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`. 
+
+- To run the app server on a port 8000 command used in env terminal: `uvicorn app:app --port 8000 --reload`. Note in this case, the path where you execute the command and the file path are same.
+- Assume you are in a different path and want to run the server, it can also be done (same I have done here for learning purposes in this repo); To run the main app server on a port 8001 command used in env terminal: `uvicorn sampleService.main:app --port 8001 --reload`. You use `.` operator to give the path. 
 
 As we see, the app is running up on a server we defined. 
 
-**Task1**: Write a logic wherein when you hit an endpoint of app running on port 8000, it returns the health status of app running on port 8001? 
+![fastapi app server running](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/4serverhealthy.png)
+
+#### **Task1**: Write a logic wherein when you hit an endpoint of app running on port 8000, it returns the health status of app running on port 8001? 
 ```
 Core logic: 
 @app.get("/mainappstatus")
@@ -255,7 +259,9 @@ fapidb=# select * from tpsqltable;
 We get version is, apart from other details (as I am doing the project): "PG_VERSION=16.2-1.pgdg120+2"
 ```
 
-**Task2**: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
+![postgres/redis container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/1postgres%26redis_container_docker.png)
+
+#### **Task2**: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
 In database/ dir, I have defined the postgres and redis configs, which I use and later in app.py I check the health of both containers. 
 ```
 I have segregated code in app.py under name Task2 which can be referred. 
@@ -264,8 +270,10 @@ Note that in the postgres config defined: Either I can directly use the postgres
 export POSTGRES_DB_URL="postgresql://postgresdluser:1234@localhost:7002/fapidb"
 And then extract value from this variable using os.getenv() ~ same can be seen in the postgresDbConfig.py file
 ```
+![postgres status postman](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/6serverhealthypostman.png)
+![status when fastapi app is down](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/12servererror.png)
 
-**Task3**: Write an async version of health check code for postgres and redis in 8000 port app, and try getting the health status of both sync and async code? 
+#### **Task3**: Write an async version of health check code for postgres and redis in 8000 port app, and try getting the health status of both sync and async code? 
 ```
 I have segregated code in app.py under name Task3 which can be referred 
 ```
@@ -275,7 +283,9 @@ Simply put: List the servers using the port using: `lsof -i :8000`.
 Kill the process pid: `kill -9 <pid>`
 (Command: `kill <pid>` sends signal (SIGTERM) and tells pid to terminate, but said program can execute some code first or even ignore the signal. `kill -9 <pid>`, on the other hand, forces the program to immediately terminate and cannot be ignored.
 
-**Task4**: Load test the sync and async version of your API using k6, ab (Apache Benchmark), or any other tool? 
+![postgres/redis status](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/5serverhealthy.png)
+
+#### **Task4**: Load test the sync and async version of your API using k6, ab (Apache Benchmark), or any other tool? 
 First, I have tested using k6. Installing: `brew install k6`
 Reading docs, and then put the terminal command: `k6 run loadtest.js`
 Configuration used for load testing using k6: 
@@ -340,6 +350,8 @@ running (2m20.9s), 0000/1000 VUs, 17709 complete and 0 interrupted iterations
 ```
 Observation for async vs sync: 
 http_req_duration: avg=1.26s vs avg=3.62s. Note that, 1s response time in itself is also quite huge number, but since we bombarded it with requests, the overall avg is effected; Else it would generally be less than 300ms. 
+
+![k6 async code stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/2async%20code%20stress%20test.png)
 
 Note: After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond. Tried restarting app running on port 8000, then postgres/redis containers, still things did not work, so in the end had to kill the processes using `kill -9 <pid>` and then restarted the services using uvicorn. 
 
@@ -427,9 +439,11 @@ Observation for async vs sync:
 Mean Time per request: 978.258ms vs 605.353. Surprisingly, it showed sync was faster. Again, its probably because the way time per response is spread and not very accurate. 
 p50 to p100 gap: (992 to 1427) vs (592 to 2788) - we observe this is kind of aligned - sync requests did take more time as gap is noticeable. 
 
+![ab stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/3abStresstest.png)
+
 Other tools that can be used for testing: jmeter, locust, etc. 
 
-**Task5**: Insert 1M+ records in postgres table and create an endpoint querying some record from the table?
+#### **Task5**: Insert 1M+ records in postgres table and create an endpoint querying some record from the table?
 First, I cleaned up the table and refreshed it then inserted records; Steps: 
 ```
 Logged into my fapidb db: postgresdockerlocal=# \c fapidb postgresdluser
@@ -494,13 +508,19 @@ fapidb=> explain select * from tpsqltable order by created_at;
 ```
 Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
-**Task6**: Dockerize/Containerize the businessMicroservice?
+![fetching records from postgres table via API](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/7serverhealthy.png)
+
+#### **Task6**: Dockerize/Containerize the businessMicroservice?
 I have created a dockerfile for the repo, and now building the current service using: `podman build --no-cache -t bmserviceimage .` (Note that `.` indicates current dir; Else syntax would be (docker/podman): `docker build -t <image> <path>`). 
 Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. Then we can hit APIs via Postman/Browser and see response. Our postgres and redis cotainers are anyways running from previous commands.
 I have added explicit details inside the Dockerfile. Also, note, if there is a code change made, then image must be rebuilt. 
 To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage` 
+![building docker image](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/8buildingdockerimage.png)
+![bmservice container logs](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/10dockercontainerlogs.png)
+![bmservice container folder dir as defined in our dockerfile](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/11dockercontainerterminal-file_directory.png)
+![env variables inside bmservice container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/13dockercontainerterminalenvvariables.png)
 
-**Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled? 
+#### **Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled? 
 The only thing changed is the host machine in the redis/postgres configs. 
 Now what changed?: 
 When I did not dockerize my fastapi app and ran it on localhost (means it basically ran on my macbook/host machine) and hit postgres or redis container for health check - I got a response. Understand that postgres and redis containers were also running on host machine only. Hence all shared the same network namespace. This means that localhost referred to the same machine for both the FastAPI application and PostgreSQL/Redis.
@@ -518,7 +538,9 @@ Container-to-Host Communication: When you specify the host machine's IP address 
 Network Address Translation (NAT): Docker uses Network Address Translation to map container ports to host ports. When a container tries to access an IP address and port, Docker's networking translates these into appropriate network requests.
 To access a service running on the host machine from a Docker container, you specify the host machine's IP address. For example, if your host machine's IP address is 192.168.1.100, you can configure your application to connect to this IP.
 
-**Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
+![all running docker containers on local](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/9allimages.png)
+
+#### **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
 A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
 Can check the docker-compose.yaml file for reference. Do ensure docker/podman compose utilities are installed as they need to be installed seaprately and do not come packed with usual docker/podman. 
 To build the compose file: `docker-compose build` (or `podman-compose build`). Note you can remove `-` and run command as well like: `podman compose build`. 
@@ -526,9 +548,15 @@ To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode
 Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or `podman-compose up --build`)
 To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
 Note that in docker file I have made the CMD command to run both app.py fastapi server as well as main.py fastapi server. Though we won't be able to get the status in the usual way from app.py to main.py; Same is objective in next task.  
-To run an individual component of docker compose (docker/podman): `docker-compose up <service_name>`
+To run an individual component of docker compose (docker/podman): `podman-compose up <service_name>`
+To enter into the container bash/terminal from compose (docker/podman): `podman-compose exec postgreslocalservice bash`
 
-**Task9**: Ensure you are able to get status of main.py server in sampleService from app.py service from the docker-compose file?
+![docker compose containers](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/14dockercomposecontainers.png)
+![redis status from fastapi app running via compose](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/15serverhealthy.png)
+![get into the container terminals of a service running via compose (docker/podman)](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/31podman%20compose%20exec%20bash.png)
+![view docker volume attached to a container in compose](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/35view_docker_volumes_in_a_container.png)
+
+#### **Task9**: Ensure you are able to get status of main.py server in sampleService from app.py service from the docker-compose file?
 If we see the current way in which we get status of main app server is: 
 ```
 @app.get("/mainappstatus")
@@ -558,7 +586,7 @@ To reiterate simply, to access main.py app server - there are 2 ways:
 One, we type-in the url from our browser/postman (which is host machine) and access the main.py server running inside container - which we did by port mapping 4501:8901. 
 Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
 
-**Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
+#### **Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
 Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. Also ensured by venv is activated. 
 Since consumerMicroservice is a separate service altogether I am spinning it up manually from Docker. 
 Docker compose is not needed as its just 1 service. From docker compose anyways I have spinned up businessMicroservice app/ postgres/ redis.
@@ -575,7 +603,11 @@ ALERT NOTE: Upon running earlier command: `podman run -p 3500:6800 --name cmserv
 `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` - network added. (Note rebuild image and then run, also ensure the directory you are building your dockerfile and all - don't mess up here)
 Note that - we can also imagine coupling the consumerMicroservice inside the same docker-compose file as well specifying the path (build context as something like `./consumerMicroservice` than giving `.`) and have all services - businessMicroservice, postgres, redis, etc running up altogether. But we are restricting now as a fundamental understanding has been developed by this far and we can try avoiding cluttering things more... 
 
-**Task11**: Publish the docker-compose file having businessMicroservice, postgres, redis to dockerhub and check if another developer can pull the image and run it on their machine?
+![all running docker networks in local](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/18dockernetworklist.png)
+![response we hit health check api of consumerMicroservice app](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/17serverhealth.png)
+![response when consumerMicroservice app hits businessMicroservice app health check api](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/19serverhealth.png)
+
+#### **Task11**: Publish the docker-compose file having businessMicroservice, postgres, redis to dockerhub and check if another developer can pull the image and run it on their machine?
 Commands ran: 
 When in dir: `/consumerMicroservice`: ` podman build --no-cache -t frpconsumermicroservicedockersrj .`
 When in dir: `/businessMicroservice`: `podman compose build` and `podman build --no-cache -t frpbusinessmicroservicedockersrj .`
@@ -599,7 +631,7 @@ To get into container bash, use the defined name only, i.e: (docker/podman) `pod
 To get into the db inside container: `psql -U postgresdluser -d fapidb`
 Table query: `fapidb=# select * from tpsqltable limit 10;`
 
-**Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
+#### **Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
 Task complete, we can check the corresponding app.py, config and schema files. 
 Let us revisit the flow of the way project is developed: 
 First: 
@@ -630,17 +662,38 @@ Sixth:
 Seventh:
 - Docker composed fastapi container (businessMicroservice), postgres container, redis container in the same network named `bmservice_network`. 
 - Later created another microservice (consumerMicroservice mapped from `3500:6800` host-container service port mapping) but it could not directly hit the fastapi/postgres/redis containers as they were a part of a network. 
-- I had to spawn up the consumerMicroservice in same network using (docker/podman): `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` and was able to hit the APIs. 
+- I had to spawn up the consumerMicroservice in same network using (docker/podman): `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` and was able to hit the APIs.
 
-**Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
+![all docker compose services now](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/24all_dockercompose_services.png)
+![how to hit a post request in postman](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/30postgresCRUD_postapi_request_body_options_postman.png)
+![hitting postgres db to fetch records from API if there are no records - error pic](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/16serverhealth-postgres-but-no-data-in-table-data-not-persisted.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/20postgresCRUD_getapi.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/21postgresCRUD_putapi.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/22postgresCRUD_deleteapi.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/23postgresCRUD_postdeletegetapi.png)
+![validating CRUD operations data inside postgres container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/29checking_inside_postgres_container_after_POST_api_call_from_code.png)
+![hitting businessMicroservice app apis from consumerMicroservice app eg 1](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/25crudapisexample.png)
+![hitting businessMicroservice app apis from consumerMicroservice app eg 2](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/27consumerMicroservice_hitting_businessMicroserviceAPI_get_postgres_data.png)
+![pydantic response validation error if our api response is not inline with defined schema eg 1](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/26_pydantic_response_validation_error_ref.png)
+![pydantic response validation error if our api response is not inline with defined schema eg 2](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/28missing_field_validation.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/32redisCRUD_getapi.png)
+![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/33redisCRUD_postapi.png)
+![validating CRUD operations data inside redis container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/34checking_inside_redis_container_after_POST_api_call_from_code.png)
+![]()
+![]()
+![]()
+![]()
+![]()
 
-**Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
+#### **Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
 
-**Task15**: Setup Kafka manually or via docker on local. Create JSON events from a service and publish it to Kafka service?
+#### **Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
 
-**Task16**: Add API test cases in the project? 
+#### **Task15**: Setup Kafka manually or via docker on local. Create JSON events from a service and publish it to Kafka service?
 
-**Task17**: Add poetry to lock the packages?
+#### **Task16**: Add API test cases in the project? 
+
+#### **Task17**: Add poetry to lock the packages?
 
 Bugs found: Data not persisintg in vole and vanishing whne contnainer restarts why?
 bug CMD ["./run-server.sh"] - does not work
