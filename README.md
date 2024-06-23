@@ -536,7 +536,7 @@ The only thing changed is the host machine in the redis/postgres configs. Now wh
 - Networking: By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise.
 - By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address. So its like host machine is a common ground/platform for multiple containers running inside it, so any request should be routed via the machine so that it can exactly know which container is interacting with which one - in a rough explanation.
 - You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; If it were an AWS EC2 machine, we would anyways know the IP of the machine...; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py.
-- Note: The IP addresses are given to us by an Internet Service Provider (ISP). You will be able to connect your computer and modem to their network and access the Internet after the ISP visits your home to install your connection. When you launch a Web browser to conduct a Google search or send an email, and everything goes smoothly, you can be sure that everything is functioning as it should. If it initially doesn't work, you might need to engage with your ISP's technical support team to have things resolved. When you establish a new connection, one of the initial things you could do is to check your IP address. Please take note of the IP address, but avoid becoming overly attached because it's possible that your ISP uses a dynamic IP address, that means it could change without warning. To have a static IP you have to tell your ISP provider. But why dynamic IP?: It is solely a numerical issue. There are a countless number of computer users connected to the Internet simultaneously all over the world. Some people use the Internet frequently, while others only occasionally, and occasionally only long enough to write an email. Every person who is available on the internet needs a distinct IP address, as was already mentioned. When you consider all the logistics involved, it would have been extremely costly to assign a fixed, static IP to each and every ISP subscriber. Additionally, the number of static IP addresses might have quickly run out with the current IP address generation (basically IPv4).Dynamic IP addresses were subsequently introduced to the world of the Internet. This made it possible for ISPs to give their customers a dynamic IP address as needed. Every time you go online, that IP address is essentially "loaned" to you.
+- Note: The IP addresses are given to us by an Internet Service Provider (ISP). You will be able to connect your computer and modem to their network and access the Internet after the ISP visits your home to install your connection. When you launch a Web browser to conduct a Google search or send an email, and everything goes smoothly, you can be sure that everything is functioning as it should. If it initially doesn't work, you might need to engage with your ISP's technical support team to have things resolved. When you establish a new connection, one of the initial things you could do is to check your IP address. Please take note of the IP address, but avoid becoming overly attached because it's possible that your ISP uses a dynamic IP address, that means it could change without warning. To have a static IP you have to tell your ISP provider. But why dynamic IP?: It is solely a numerical issue. There are a countless number of computer users connected to the Internet simultaneously all over the world. Some people use the Internet frequently, while others only occasionally, and occasionally only long enough to write an email. Every person who is available on the internet needs a distinct IP address, as was already mentioned. When you consider all the logistics involved, it would have been extremely costly to assign a fixed, static IP to each and every ISP subscriber. Additionally, the number of static IP addresses might have quickly run out with the current IP address generation (basically IPv4).Dynamic IP addresses were subsequently introduced to the world of the Internet. This made it possible for ISPs to give their customers a dynamic IP address as needed. Every time you go online, that IP address is essentially "loaned" to you. [Reference](https://www.javatpoint.com/why-has-my-ip-address-changed).
 - Hence, you may also observe a change in your macbook/host IP if you switch from wifi to mobile hotspot for your macbook internet connectivity. (In following tasks, your host IP will play an important role in connecting the microservices, hence keep note of this point)
 - We can ask how is docker able to route the connection from container to host machine via bridge network concept?:
   - Bridge Network Creation: By default, Docker containers are connected to a bridge network. This is an internal virtual network that allows containers to communicate with each other and the host machine.
@@ -709,6 +709,9 @@ Task complete, we can check the corresponding app.py, config and schema files. L
 
 #### **Task17**: Add poetry to lock the packages?
 
+- For later reference??: https://www.geeksforgeeks.org/how-to-add-python-poetry-to-an-existing-project/
+- https://realpython.com/dependency-management-python-poetry/
+
 ------------------------------------
 
 #### Bugs found: 
@@ -720,116 +723,70 @@ Task complete, we can check the corresponding app.py, config and schema files. L
 
 #### Other learnings: 
 
-Apart from the info I've written in the tasks in readme, or the comments I have added in code, some other things learned: 
+Apart from the info I've written in the tasks in readme, or the comments I have added in code, some other things learned:
+- What is the difference between 0.0.0.0, 127.0.0.1 and localhost?: https://stackoverflow.com/questions/20778771/what-is-the-difference-between-0-0-0-0-127-0-0-1-and-localhost
+- Pydantic is the most widely used data validation library for Python. 
+- In Python, a data class is a class that is designed to only hold data values. They aren't different from regular classes, but they usually don't have any other methods. They are typically used to store information that will be passed between different parts of a program or a system: https://www.dataquest.io/blog/how-to-use-python-data-classes/
+- A class defined inside another class is known as an inner class in Python. Sometimes inner class is also called nested class. If the inner class is instantiated, the object of inner class can also be used by the parent class. Object of inner class becomes one of the attributes of the outer class. Inner class automatically inherits the attributes of the outer class without formally establishing inheritance.
+- Redis-Fastapi-Postgres: 
+  - Postgres database in Docker: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/
+  - Spin up Redis on Docker and learn basic commands: https://www.youtube.com/watch?v=ZkwKyUZWkp4
+  - FastAPI Redis Tutorial: https://www.youtube.com/watch?v=reNPNDustQU
+  - Fastapi RESTful API CRUD postgresql: https://www.youtube.com/watch?v=d_ugoWsvGLI
+  - FastAPI with PostgreSQL and Docker: https://www.youtube.com/watch?v=2X8B_X2c27Q
+  - A Guide to Connecting PostgreSQL and Pythons' Fast API: From Installation to Integration: https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-fast-api-from-installation-to-integration-825f875f9f7d
+  - How to Integrate FastAPI with PostgreSQL: https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
+  - 0.0.0.0 instead of localhost for port: https://www.reddit.com/r/docker/comments/rk1kfp/0000_instead_of_localhost_for_port/
+  - Fastapi background tasks, startup events: 
+    - https://fastapi.tiangolo.com/tutorial/background-tasks/
+    - https://fastapi.tiangolo.com/advanced/events/#startup-event
+- CGI (Common Gateway interfaces), WSGI, ASGI: Common Gateway Interface (CGI) is an interface specification that enables web servers to execute an external program to process HTTP or HTTPS user requests. Uvicorn is a web server. It handles network communication - receiving requests from client applications such as users' browsers and sending responses to them. It communicates with FastAPI using the Asynchronous Server Gateway Interface (ASGI), a standard API for Python web servers that run asynchronous code. When a user enters a web site, their browser makes a connection to the site’s web server (this is called the request). The server looks up the file in the file system and sends it back to the user’s browser, which displays it (this is the response). This is roughly how the underlying protocol, HTTP, works. Dynamic web sites are not based on files in the file system, but rather on programs which are run by the web server when a request comes in, and which generate the content that is returned to the user. They can do all sorts of useful things, like display the postings of a bulletin board, show your email, configure software, or just display the current time. These programs can be written in any programming language the server supports. Since most servers support Python, it is easy to use Python to create dynamic web sites. Most HTTP servers are written in C or C++, so they cannot execute Python code directly – a bridge is needed between the server and the program. These bridges, or rather interfaces, define how programs interact with the server. There have been numerous attempts to create the best possible interface, but there are only a few worth mentioning. Not every web server supports every interface. Many web servers only support old, now-obsolete interfaces; however, they can often be extended using third-party modules to support newer ones. This interface, most commonly referred to as “CGI”, is the oldest, and is supported by nearly every web server out of the box. Programs using CGI to communicate with their web server need to be started by the server for every request. So, every request starts a new Python interpreter – which takes some time to start up – thus making the whole interface only usable for low load situations. The upside of CGI is that it is simple – writing a Python program which uses CGI is a matter of about three lines of code. This simplicity comes at a price: it does very few things to help the developer. Using CGI sometimes leads to small annoyances while trying to get these scripts to run. The Web Server Gateway Interface, or WSGI for short, is defined in PEP 333 and is currently the best way to do Python web programming. While it is great for programmers writing frameworks, a normal web developer does not need to get in direct contact with it. When choosing a framework for web development it is a good idea to choose one which supports WSGI. The big benefit of WSGI is the unification of the application programming interface. When your program is compatible with WSGI – which at the outer level means that the framework you are using has support for WSGI – your program can be deployed via any web server interface for which there are WSGI wrappers. You do not need to care about whether the application user uses mod_python or FastCGI or mod_wsgi – with WSGI your application will work on any gateway interface. The Python standard library contains its own WSGI server, wsgiref, which is a small web server that can be used for testing. Another definition: A WSGI server, which stands for Web Server Gateway Interface, is a specification that allows web servers to communicate with Python web applications. It acts as a middleman between the web server (like Nginx or Apache) and the web application written in Python.
+  - https://en.wikipedia.org/wiki/Common_Gateway_Interface
+  - https://docs.python.org/2/howto/webservers.html
+  - https://www.fullstackpython.com/wsgi-servers.html
+  - (and chatgpt...for info)
+- Postgres db: 
+  - Postgres docker image in dockerhub: https://hub.docker.com/_/postgres
+  - dbeaver can be used to view postgres db UI. 
+  - User permissions/ db accesses: 
+    - https://stackoverflow.com/questions/22483555/postgresql-give-all-permissions-to-a-user-on-a-postgresql-database
+    - https://stackoverflow.com/questions/50180667/how-can-i-connect-to-a-database-as-another-user
+    - https://stackoverflow.com/questions/60138692/sqlalchemy-psycopg2-errors-insufficientprivilege-permission-denied-for-relation
+    - https://stackoverflow.com/questions/63044935/flask-sqlalchemy-postgres-error-could-not-connect-to-server-connection-refuse
+  - Insert 1M records postgres: https://stackoverflow.com/questions/59169855/inserting-1-million-random-data-into-postgresql
+  - ORDER BY random in postgres: https://dba.stackexchange.com/questions/261549/order-by-random-meaning-postgresql
+  - Postgres Explain Explained - How Databases Prepare Optimal Query Plans to Execute SQL: https://www.youtube.com/watch?v=P7EUFtjeAmI
+- Load testing k6/ab: 
+  - k6, tweak OS limits for load testing (NOT RECOMMENDED): https://grafana.com/docs/k6/latest/set-up/fine-tune-os/
+  - ab load testing: 
+    - https://stackoverflow.com/questions/12732182/ab-load-testing
+    - https://www.youtube.com/watch?v=gvounvDSDGg
+- Series & Parallel asyncio calls: https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
+- Docker: 
+  - Tutorial: 
+    - Part1: https://www.youtube.com/watch?v=fSmLiOMp2qI
+    - Part2: https://www.youtube.com/watch?v=KuCwrySinqI
+  - The sequence in which you execute instructions in Dockerfile matters a lot: https://docs.docker.com/build/cache/
+  - Push docker image using podman: https://stackoverflow.com/questions/64199116/how-to-push-an-image-to-the-docker-registry-using-podman
+  - 'docker-compose' creating multiple instances for the same image: https://stackoverflow.com/questions/39663096/docker-compose-creating-multiple-instances-for-the-same-image
+  - What exactly is 'Building'?: Building means many things to many people, but in general it means starting with source files produced by developers and ending with things like installation packages that are ready for deployment; 
+    - https://stackoverflow.com/questions/1622506/what-exactly-is-building
+  - Multi-stage builds are useful to anyone who has struggled to optimize Dockerfiles while keeping them easy to read and maintain. With multi-stage builds, you use multiple FROM statements in your Dockerfile. Each FROM instruction can use a different base, and each of them begins a new stage of the build. You can selectively copy artifacts from one stage to another, leaving behind everything you don't want in the final image; 
+    - https://docs.docker.com/build/building/multi-stage/
+  - Difference between the 'COPY' and 'ADD' commands in a Dockerfile?: COPY is same as 'ADD', but without the tar and remote URL handling. In other words, they work similarly, just that ADD can do more things;
+    - https://stackoverflow.com/questions/24958140/what-is-the-difference-between-the-copy-and-add-commands-in-a-dockerfile
+  - Difference between CMD and ENTRYPOINT in a Dockerfile?: The ENTRYPOINT specifies a command that will always be executed when the container starts. The CMD specifies arguments that will be fed to the ENTRYPOINT; 
+    - https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile
+  - Docker containers internals: https://github.com/surajvm1/demystifying-containers/blob/master/part1-kernel-space/post.md
+  - Run games using docker?: https://www.reddit.com/r/docker/comments/1763y1q/run_games_using_docker/
+  - What are the differences between ubuntu and an ubuntu docker image, or something similar?: 
+    - https://stackoverflow.com/questions/50551846/what-are-the-differences-between-ubuntu-and-and-an-ubuntu-docker-image
+    - https://stackoverflow.com/questions/20274162/why-do-you-need-a-base-image-with-docker
+    - Do all docker images have minimal OS?: https://stackoverflow.com/questions/46708721/do-all-docker-images-have-minimal-os
+  - Difference between "docker compose" and "docker-compose": https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose
+  - Where are docker images stored physically on macos?: https://stackoverflow.com/questions/54148999/where-are-docker-images-stored-physically-on-macos
+  - Docker bridge network: https://medium.com/@augustineozor/understanding-docker-bridge-network-6e499da50f65
+- AWS Dynamodb architecture paper: https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
 
-https://dbeaver.io/ - dbeaver to see postgres gui
-https://stackoverflow.com/questions/20778771/what-is-the-difference-between-0-0-0-0-127-0-0-1-and-localhost
-pydantic: 
-One of the primary ways of defining schema in Pydantic is via models. Models are simply classes which inherit from pydantic.BaseModel and define fields as annotated attributes.
-Pydantic is the most widely used data validation library for Python.
-Data classes are one of the new features of Python 3.7. With data classes, you do not have to write boilerplate code to get proper initialization, representation, and comparisons for your objects.
-In Python, a data class is a class that is designed to only hold data values. They aren't different from regular classes, but they usually don't have any other methods. They are typically used to store information that will be passed between different parts of a program or a system.
-https://www.dataquest.io/blog/how-to-use-python-data-classes/
-Eg of pydantic: 
-from pydantic import BaseModel
-class User(BaseModel):
-    id: int
-    name: str = 'Jane Doe'
-user = User(id='123')
-assert user.id == 123
-assert isinstance(user.id, int)
-
-
-
-https://www.tutorialspoint.com/python/python_inner_classes.htm
-https://stackoverflow.com/questions/12857604/python-how-to-check-if-redis-server-is-available
-https://www.youtube.com/watch?v=RdPYA-wDhTA
-https://hub.docker.com/_/postgres
-https://www.youtube.com/watch?v=ZkwKyUZWkp4
-https://hub.docker.com/_/redis
-https://fastapi.tiangolo.com/
-https://medium.com/@AbbasPlusPlus/docker-port-mapping-explained-c453dfb0ae39
-https://stackoverflow.com/questions/76046216/fastapi-local-server-every-request-uses-a-different-port-port-in-use-error
-https://en.wikipedia.org/wiki/Common_Gateway_Interface
-https://docs.python.org/2/howto/webservers.html
-https://stackoverflow.com/questions/69641363/how-to-run-fastapi-app-on-multiple-ports
-https://www.youtube.com/watch?v=reNPNDustQU
-https://www.youtube.com/watch?v=VrZh4f9B-mg
-https://www.youtube.com/watch?v=d_ugoWsvGLI
-
-https://fastapi.tiangolo.com/async/
-https://www.youtube.com/watch?v=2X8B_X2c27Q
-
-https://stackoverflow.com/questions/22483555/postgresql-give-all-permissions-to-a-user-on-a-postgresql-database
-https://stackoverflow.com/questions/50180667/how-can-i-connect-to-a-database-as-another-user
-https://stackoverflow.com/questions/60138692/sqlalchemy-psycopg2-errors-insufficientprivilege-permission-denied-for-relation
-https://stackoverflow.com/questions/63044935/flask-sqlalchemy-postgres-error-could-not-connect-to-server-connection-refuse
-https://stackoverflow.com/questions/39257147/convert-pandas-dataframe-to-json-format
-https://medium.com/@kevinkoech265/a-guide-to-connecting-postgresql-and-pythons-fast-api-from-installation-to-integration-825f875f9f7d
-https://www.squash.io/connecting-fastapi-with-postgresql-a-practical-approach/
-reference to use async await in api: https://stackoverflow.com/questions/68733675/can-i-use-await-on-multiple-functions-at-once
-https://grafana.com/docs/k6/latest/set-up/fine-tune-os/
-https://askubuntu.com/questions/791841/difference-kill-9-pid-and-kill-pid-command
-https://stackoverflow.com/questions/19071512/socket-error-errno-48-address-already-in-use
-https://stackoverflow.com/questions/12732182/ab-load-testing
-https://gist.github.com/vinayaksuresh/c1b6eeb09f71cb6df980d4fc9e425989
-https://www.youtube.com/watch?v=gvounvDSDGg
-https://www.youtube.com/watch?v=ghuo8m7AXEM&t=217s
-https://stackoverflow.com/questions/59169855/inserting-1-million-random-data-into-postgresql
-order by random() works but ~ https://dba.stackexchange.com/questions/261549/order-by-random-meaning-postgresql
-https://www.youtube.com/watch?v=P7EUFtjeAmI
-
-postgres
-(also docs: https://www.postgresql.org/docs/8.0/sql-createuser.html)
-(for all commands above, followed steps in this doc: https://www.commandprompt.com/education/how-to-create-a-postgresql-database-in-docker/, also followed the youtube video: https://www.youtube.com/watch?v=2X8B_X2c27Q)
-
-tasks todo: 
-mongodb integrate
-
-error faced with sqlalchemy
-https://www.youtube.com/watch?v=epaopuvvOGs
-https://stackoverflow.com/questions/75282511/df-to-table-throw-error-typeerror-init-got-multiple-values-for-argument
-
-https://www.youtube.com/watch?v=fSmLiOMp2qI
-https://www.youtube.com/watch?v=KuCwrySinqI
-
-docker builds on top of another layer by layer as it helps in caching
-docker build time - check the steps which need not be reexeucted even for a small change.. and docker image size - check the os base layr you are installing
-we want local databSes to retain infromation across restarts - hence docker volumes
-say you create a mongo db container and now you want to persist data s well,
-ensure you have volume created for it: 
-docker volume create dbvol
-docker run -v dbvol:/data/db -p 27017:27017 mongo
-inside the container it will create volume at the /data/db path
-as we know we can go inside mongo/postgres/redis container using docker exec -it <>
-if container restarts or kills. etc... vol has saved data... once conteinaer spins up it can reconnect to volume
-
-volume a logical space inside container where you can dump data into volume, if container goes down, sicne volumne persists data still tehre
-docker volume create --name hello
-docker run -d -v hello:/container/path/for/volume container_image my_command
-
-explore later - but interesting thing - running something in background using fastapi: https://fastapi.tiangolo.com/tutorial/background-tasks/
-
-https://stackoverflow.com/questions/64199116/how-to-push-an-image-to-the-docker-registry-using-podman
-https://stackoverflow.com/questions/39663096/docker-compose-creating-multiple-instances-for-the-same-image
-https://stackoverflow.com/questions/21553353/what-is-the-difference-between-cmd-and-entrypoint-in-a-dockerfile
-https://stackoverflow.com/questions/24958140/what-is-the-difference-between-the-copy-and-add-commands-in-a-dockerfile
-multi stage builds
-https://stackoverflow.com/questions/1622506/what-exactly-is-building
-https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf
-https://github.com/docker-library/official-images/blob/master/README.md
-https://www.reddit.com/r/docker/comments/rk1kfp/0000_instead_of_localhost_for_port/
-https://github.com/surajvm1/demystifying-containers
-https://stackoverflow.com/questions/50551846/what-are-the-differences-between-ubuntu-and-and-an-ubuntu-docker-image
-https://www.reddit.com/r/docker/comments/1763y1q/run_games_using_docker/
-https://stackoverflow.com/questions/46708721/do-all-docker-images-have-minimal-os
-https://medium.com/@augustineozor/understanding-docker-bridge-network-6e499da50f65
-https://stackoverflow.com/questions/66514436/difference-between-docker-compose-and-docker-compose
-https://stackoverflow.com/questions/54148999/where-are-docker-images-stored-physically-on-macos
-https://spacelift.io/blog/docker-compose
-https://stackoverflow.com/questions/630453/what-is-the-difference-between-post-and-put-in-http?noredirect=1&lq=1
-https://www.javatpoint.com/why-has-my-ip-address-changed
-https://realpython.com/dependency-management-python-poetry/
-https://www.geeksforgeeks.org/how-to-add-python-poetry-to-an-existing-project/
 
 ------------------------------------
