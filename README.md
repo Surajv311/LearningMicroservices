@@ -142,7 +142,7 @@ Note: I start both the app/main servers in different ports 8000, 8001 and ensure
 
 Setting Redis locally via docker using commands: Note that in below command I am using port mapping `7001:6379`, i.e will run the Redis container on a different port 7001 rather than default port 6379 (in a rough way for now). To be more technical (which we will again revisit and understand in later parts):
 - We are using concept of port mapping; So this flag maps port 6379 inside the container (the default port Redis listens on) to port 7001 on the host machine. This allows you to connect to Redis on your host machine using localhost:7001.
-- When we type http://localhost:7001/ in our browser or postman, we won't get any response though as it (Redis) is a database server, not a web server. Redis container listens for database connections on its port (in this case, 6379 mapped to 7001), but it does not serve web pages or respond to HTTP requests.
+- When we type `http://localhost:7001/` in our browser or postman, we won't get any response though as it (Redis) is a database server, not a web server. Redis container listens for database connections on its port (in this case, 6379 mapped to 7001), but it does not serve web pages or respond to HTTP requests.
 
 ```
 docker run --name redislocal -p 7001:6379 redis 
@@ -270,8 +270,7 @@ In database/ dir, I have defined the postgres and redis configs, which I use and
 ```
 I have segregated code in app.py under name Task2 which can be referred. 
 Also have created config files in database dir.
-Note that in the postgres config defined: Either I can directly use the postgres url defined in variable, or I can export it in my local env by running command in terminal: 
-export POSTGRES_DB_URL="postgresql://postgresdluser:1234@localhost:7002/fapidb"
+Note that in the postgres config defined: Either I can directly use the postgres url defined in variable, or I can export it in my local env by running command in terminal: `export POSTGRES_DB_URL="postgresql://postgresdluser:1234@localhost:7002/fapidb"`
 And then extract value from this variable using os.getenv() ~ same can be seen in the postgresDbConfig.py file
 ```
 
@@ -583,10 +582,10 @@ To explain in other way:
 
 - In Docker Compose, the ports directive is used to map ports from the host machine to the container. This allows services running inside the container to be accessible from the host machine.
 - Mapping ports is essential because containers are isolated environments, and by default, the services running inside them are not accessible from the outside world. By mapping a container's port to a port on the host machine, you make the service inside the container accessible from outside the container, using the host's IP address and the mapped port.
-- If we observe current docker-compose file: "4500:8900"; This maps port 8900 inside the container to port 4500 on the host machine. It means that if you access http://localhost:4500 from browser/postman on your host machine, it will be directed to the service running on port 8900 inside the container.
-- Then - Change that we made: "4501:8901": This maps port 8901 inside the container to port 4501 on the host machine. It means that if you access http://localhost:4501 from browser/postman on your host machine, it will be directed to the service running on port 8901 inside the container.
-- If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them: Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: http://localhost:4500
-- For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: http://localhost:4501
+- If we observe current docker-compose file: "4500:8900"; This maps port 8900 inside the container to port 4500 on the host machine. It means that if you access `http://localhost:4500` from browser/postman on your host machine, it will be directed to the service running on port 8900 inside the container.
+- Then - Change that we made: "4501:8901": This maps port 8901 inside the container to port 4501 on the host machine. It means that if you access `http://localhost:4501` from browser/postman on your host machine, it will be directed to the service running on port 8901 inside the container.
+- If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them: Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: `http://localhost:4500`
+- For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: `http://localhost:4501`
 - This is the case when we are accessing them from our browser/postman.
 - But now, if I want to check the health of main.py server from app.py server - remember both of them are running in the same container environment - so the request in code will be from one port to another inside the container itself not on host machine.
 - This is an inter-service communication - for this we leverage docker (or podman) compose’s internal DNS resolution, allowing one service to communicate with another by using its service name.
