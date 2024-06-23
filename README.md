@@ -124,8 +124,9 @@ As we see, the app is running up on a server we defined.
 ![fastapi app server running](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/4serverhealthy.png)
 
 #### **Task1**: Write a logic wherein when you hit an endpoint of app running on port 8000, it returns the health status of app running on port 8001? 
-```
-Core logic: 
+
+Core logic:
+``` 
 @app.get("/mainappstatus")
 def read_root():
     url = 'http://127.0.0.1:8001/currentStatus' # Note that endpoint is camelCase, same is expected when typing in url/testing via postman
@@ -133,13 +134,13 @@ def read_root():
     print(f"Status of main app server: {response.status_code}")
     data = json.loads(response.text)
     return data
-    
-Note: I start both the app/main servers in different ports 8000, 8001 and ensure they are running to be able to properly test code, by running previous commands as shown earlier. 
 ```
 
-Setup Redis locally via docker using commands: 
-Note that in below command I am using port mapping 7001:6379, i.e will run the Redis container on a different port 7001 rather than default port 6379 (in a rough way). 
-To be more technical (which we will again revisit and understand in later parts):
+Note: I start both the app/main servers in different ports 8000, 8001 and ensure they are running to be able to properly test code, by running previous commands (uvicorn commands) as shown earlier.
+
+#### **Task1.1**: Setup Redis and Postgresql locally via docker?  
+
+Setting Redis locally via docker using commands: Note that in below command I am using port mapping `7001:6379`, i.e will run the Redis container on a different port 7001 rather than default port 6379 (in a rough way for now). To be more technical (which we will again revisit and understand in later parts):
 - We are using concept of port mapping; So this flag maps port 6379 inside the container (the default port Redis listens on) to port 7001 on the host machine. This allows you to connect to Redis on your host machine using localhost:7001.
 - When we type http://localhost:7001/ in our browser or postman, we won't get any response though as it (Redis) is a database server, not a web server. Redis container listens for database connections on its port (in this case, 6379 mapped to 7001), but it does not serve web pages or respond to HTTP requests.
 
@@ -196,7 +197,8 @@ docker start redislocal (or) podman start redislocal
 We get version is, apart from other details (as I am doing the project): "REDIS_VERSION=7.2.4"
 ```
 
-Setup Postgresql locally via docker using commands: 
+Setting up Postgresql locally via docker using commands: 
+
 ```
 docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres 
 # Note that -e key in command means env variable, if you add -d in the command, the terminal will run in detached mode - so in background all postgresql setup commands would run and you can continue using same terminal
@@ -262,33 +264,33 @@ We get version is, apart from other details (as I am doing the project): "PG_VER
 ![postgres/redis container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/1postgres%26redis_container_docker.png)
 
 #### **Task2**: Create a logic wherein you can get the health status of your postgres and redis containers from app running on port 8000? 
+
 In database/ dir, I have defined the postgres and redis configs, which I use and later in app.py I check the health of both containers. 
+
 ```
 I have segregated code in app.py under name Task2 which can be referred. 
-Also have created config files in database dir. 
+Also have created config files in database dir.
 Note that in the postgres config defined: Either I can directly use the postgres url defined in variable, or I can export it in my local env by running command in terminal: 
 export POSTGRES_DB_URL="postgresql://postgresdluser:1234@localhost:7002/fapidb"
 And then extract value from this variable using os.getenv() ~ same can be seen in the postgresDbConfig.py file
 ```
+
 ![postgres status postman](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/6serverhealthypostman.png)
 ![status when fastapi app is down](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/12servererror.png)
 
 #### **Task3**: Write an async version of health check code for postgres and redis in 8000 port app, and try getting the health status of both sync and async code? 
-```
-I have segregated code in app.py under name Task3 which can be referred 
-```
 
-Note: There could be times when app gets stuck or even after refresh it does not send a response or gives ERROR: Address already in use response, in such case, we can kill the app running on port and restart it. 
-Simply put: List the servers using the port using: `lsof -i :8000`. 
-Kill the process pid: `kill -9 <pid>`
-(Command: `kill <pid>` sends signal (SIGTERM) and tells pid to terminate, but said program can execute some code first or even ignore the signal. `kill -9 <pid>`, on the other hand, forces the program to immediately terminate and cannot be ignored.
+I have segregated code in app.py file under name Task3 which can be referred. Moving forward the piece of code written to which coresssponding task is well defined in the py files. 
+Note: 
+- There could be times when app gets stuck or even after refresh it does not send a response or gives ERROR: Address already in use response, in such case, we can kill the app running on port and restart it. Simply put: List the servers using the port using: `lsof -i :8000`.
+- Kill the process pid: `kill -9 <pid>`. (Command: `kill <pid>` sends signal (SIGTERM) and tells pid to terminate, but said program can execute some code first or even ignore the signal. `kill -9 <pid>`, on the other hand, forces the program to immediately terminate and cannot be ignored)
 
 ![postgres/redis status](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/5serverhealthy.png)
 
 #### **Task4**: Load test the sync and async version of your API using k6, ab (Apache Benchmark), or any other tool? 
-First, I have tested using k6. Installing: `brew install k6`
-Reading docs, and then put the terminal command: `k6 run loadtest.js`
-Configuration used for load testing using k6: 
+
+First, I have tested using k6. Installing: `brew install k6`. Reading docs, and then put the terminal command: `k6 run loadtest.js`. Configuration used for load testing using k6: 
+
 ```
 vus: 100,
 stages: [
@@ -298,7 +300,9 @@ stages: [
     { duration: '1m', target: 0 }, // ramp down
   ]
 ```
-k6 testing for async vs sync 
+
+Results of k6 load testing: 
+
 ```
 Results for async code: 
 scenarios: (100.00%) 1 scenario, 1000 max VUs, 2m45s max duration (incl. graceful stop):
@@ -348,16 +352,18 @@ vus............................: 2      min=2        max=1000
 vus_max........................: 1000   min=1000     max=1000
 running (2m20.9s), 0000/1000 VUs, 17709 complete and 0 interrupted iterations
 ```
-Observation for async vs sync: 
-http_req_duration: avg=1.26s vs avg=3.62s. Note that, 1s response time in itself is also quite huge number, but since we bombarded it with requests, the overall avg is effected; Else it would generally be less than 300ms. 
+
+Observation for async vs sync load testing: `http_req_duration: avg=1.26s vs avg=3.62s`. 
+- Note that, 1s response time in itself is also quite huge number, but since we bombarded it with requests, the overall avg is effected; Else it would generally be less than 300ms. 
 
 ![k6 async code stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/2async%20code%20stress%20test.png)
 
 Note: After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond. Tried restarting app running on port 8000, then postgres/redis containers, still things did not work, so in the end had to kill the processes using `kill -9 <pid>` and then restarted the services using uvicorn. 
 
-Then did the stress testing using ab. Read docs/ videos. 
-Simple command eg. that can be used in terminal (no prior setup was needed in my mac, probably it came pre-installed): `ab -k -c 10 -n 50 http://127.0.0.1:8000/asyncrpstatus`. Command means: We will be hitting the endpoint with 10 simultaneous connections until 50 requests are met. It will be done using the keep alive header `-k` used. 
-Note: When I increased the connections to a lot say `-c 10000`, got error, since the mac local setup did not allow.
+Then did the stress testing using ab (Apache benchmark). Read docs/ videos. 
+- Simple command eg. that can be used in terminal (no prior setup was needed in my mac, probably it came pre-installed): `ab -k -c 10 -n 50 http://127.0.0.1:8000/asyncrpstatus`. Command means: We will be hitting the endpoint with 10 simultaneous connections until 50 requests are met. It will be done using the keep alive header `-k` used.
+- Note: When I increased the connections to a lot say `-c 10000`, got error, since the mac local setup did not allow.
+
 ```
 Benchmarking 127.0.0.1 (be patient)
 socket: Too many open files (24)
@@ -436,15 +442,17 @@ Percentage of the requests served within a certain time (ms)
 ```
 
 Observation for async vs sync: 
-Mean Time per request: 978.258ms vs 605.353. Surprisingly, it showed sync was faster. Again, its probably because the way time per response is spread and not very accurate. 
-p50 to p100 gap: (992 to 1427) vs (592 to 2788) - we observe this is kind of aligned - sync requests did take more time as gap is noticeable. 
-
-![ab stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/3abStresstest.png)
+- `Mean Time per request: 978.258ms vs 605.353`.
+- Surprisingly, it showed sync was faster. Again, its probably because the way time per response is spread and not very accurate. p50 to p100 gap: (992 to 1427) vs (592 to 2788) - we observe this is kind of aligned - sync requests did take more time as gap is noticeable. 
 
 Other tools that can be used for testing: jmeter, locust, etc. 
 
+![ab stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/3abStresstest.png)
+
 #### **Task5**: Insert 1M+ records in postgres table and create an endpoint querying some record from the table?
-First, I cleaned up the table and refreshed it then inserted records; Steps: 
+
+First, I cleaned up the table and refreshed it then inserted records; Steps below; Then added API endpoints to query records as `Task5` heading in comments in the app.py file. 
+
 ```
 Logged into my fapidb db: postgresdockerlocal=# \c fapidb postgresdluser
 fapidb=> truncate tpsqltable;
@@ -506,50 +514,50 @@ fapidb=> explain select * from tpsqltable order by created_at;
 (5 rows)
 ------------------------------------------------------------------------------
 ```
-Then added API endpoint to do the same defined as `Task5` in the app.py file.
 
 ![fetching records from postgres table via API](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/7serverhealthy.png)
 
 #### **Task6**: Dockerize/Containerize the businessMicroservice?
-I have created a dockerfile for the repo, and now building the current service using: `podman build --no-cache -t bmserviceimage .` (Note that `.` indicates current dir; Else syntax would be (docker/podman): `docker build -t <image> <path>`). 
-Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. Then we can hit APIs via Postman/Browser and see response. Our postgres and redis cotainers are anyways running from previous commands.
-I have added explicit details inside the Dockerfile. Also, note, if there is a code change made, then image must be rebuilt. 
-To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage` 
+
+- I have created a dockerfile for the repo, and now building the current service using: `podman build --no-cache -t bmserviceimage .` (Note that `.` indicates current dir; Else syntax would be (docker/podman): `docker build -t <image> <path>`).
+- Once image was build, I ran the image, i.e spawn up the container with a name using: `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`. In short, it is port mapping to our fastapi server running inside the container. Then we can hit APIs via Postman/Browser and see response. Our postgres and redis cotainers are anyways running from previous commands.
+- I have added explicit details inside the Dockerfile. Also, note, if there is a code change made, then image must be rebuilt. To run the container in some other port parallely using same image, simply: `podman run -p 4600:8900 --name bmservicecontainer bmserviceimage`
+
 ![building docker image](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/8buildingdockerimage.png)
 ![bmservice container logs](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/10dockercontainerlogs.png)
 ![bmservice container folder dir as defined in our dockerfile](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/11dockercontainerterminal-file_directory.png)
 ![env variables inside bmservice container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/13dockercontainerterminalenvvariables.png)
 
-#### **Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled? 
-The only thing changed is the host machine in the redis/postgres configs. 
-Now what changed?: 
-When I did not dockerize my fastapi app and ran it on localhost (means it basically ran on my macbook/host machine) and hit postgres or redis container for health check - I got a response. Understand that postgres and redis containers were also running on host machine only. Hence all shared the same network namespace. This means that localhost referred to the same machine for both the FastAPI application and PostgreSQL/Redis.
-So credentials like: POSTGRES_HOST/REDIS_HOST = "localhost". 
-When I dockerized my fastapi app and ran it in a docker container the networking context changed. Key points:
-Isolation: Each Docker container has its own network stack. localhost within a Docker container refers to the container itself, not the host machine.
-Networking: By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise.
-By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address. So its like host machine is a common ground/platform for multiple containers running inside it, so any request should be routed via the machine so that it can exactly know which container is interacting with which one - in a rough explanation. 
-You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; If it were an AWS EC2 machine, we would anyways know the IP of the machine...; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py. 
-Note: The IP addresses are given to us by an Internet Service Provider (ISP). You will be able to connect your computer and modem to their network and access the Internet after the ISP visits your home to install your connection. When you launch a Web browser to conduct a Google search or send an email, and everything goes smoothly, you can be sure that everything is functioning as it should. If it initially doesn't work, you might need to engage with your ISP's technical support team to have things resolved. When you establish a new connection, one of the initial things you could do is to check your IP address. Please take note of the IP address, but avoid becoming overly attached because it's possible that your ISP uses a dynamic IP address, that means it could change without warning. To have a static IP you have to tell your ISP provider. But why dynamic IP?: It is solely a numerical issue. There are a countless number of computer users connected to the Internet simultaneously all over the world. Some people use the Internet frequently, while others only occasionally, and occasionally only long enough to write an email. Every person who is available on the internet needs a distinct IP address, as was already mentioned. When you consider all the logistics involved, it would have been extremely costly to assign a fixed, static IP to each and every ISP subscriber. Additionally, the number of static IP addresses might have quickly run out with the current IP address generation (basically IPv4).Dynamic IP addresses were subsequently introduced to the world of the Internet. This made it possible for ISPs to give their customers a dynamic IP address as needed. Every time you go online, that IP address is essentially "loaned" to you.
-Hence, you may also observe a change in your macbook/host IP if you switch from wifi to mobile hotspot for your macbook internet connectivity. (In following tasks, your host IP will play an important role in connecting the microservices, hence keep note of this point) 
-We can ask how is docker able to route the connection from container to host machine via bridge network concept?: 
-Bridge Network Creation: By default, Docker containers are connected to a bridge network. This is an internal virtual network that allows containers to communicate with each other and the host machine.
-Container-to-Host Communication: When you specify the host machine's IP address in the container, the container's networking stack knows to route the traffic out of the container to the host machine's network interface.
-Network Address Translation (NAT): Docker uses Network Address Translation to map container ports to host ports. When a container tries to access an IP address and port, Docker's networking translates these into appropriate network requests.
-To access a service running on the host machine from a Docker container, you specify the host machine's IP address. For example, if your host machine's IP address is 192.168.1.100, you can configure your application to connect to this IP.
+#### **Task7**: Since businessMicroservice is dockerized try connecting to the other Redis/Postgres containers - for now we can say it is loosely coupled?
+
+The only thing changed is the host machine in the redis/postgres configs. Now what changed?: 
+- When I did not dockerize my fastapi app and ran it on localhost (means it basically ran on my macbook/host machine) and hit postgres or redis container for health check - I got a response. Understand that postgres and redis containers were also running on host machine only. Hence all shared the same network namespace. This means that localhost referred to the same machine for both the FastAPI application and PostgreSQL/Redis.
+- So credentials like: POSTGRES_HOST/REDIS_HOST = "localhost". When I dockerized my fastapi app and ran it in a docker container the networking context changed. Key points:
+- Isolation: Each Docker container has its own network stack. localhost within a Docker container refers to the container itself, not the host machine.
+- Networking: By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise.
+- By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine, you should use the host machine's IP address. So its like host machine is a common ground/platform for multiple containers running inside it, so any request should be routed via the machine so that it can exactly know which container is interacting with which one - in a rough explanation.
+- You can find host machine (in my case macbook) ip using `ping -c 1 $(hostname)` or `ifconfig` command; If it were an AWS EC2 machine, we would anyways know the IP of the machine...; Then update your FastAPI configuration to use this IP address (host machine) instead of localhost i.e update POSTGRES_HOST url, which I did in code in postgresDbConfig.py.
+- Note: The IP addresses are given to us by an Internet Service Provider (ISP). You will be able to connect your computer and modem to their network and access the Internet after the ISP visits your home to install your connection. When you launch a Web browser to conduct a Google search or send an email, and everything goes smoothly, you can be sure that everything is functioning as it should. If it initially doesn't work, you might need to engage with your ISP's technical support team to have things resolved. When you establish a new connection, one of the initial things you could do is to check your IP address. Please take note of the IP address, but avoid becoming overly attached because it's possible that your ISP uses a dynamic IP address, that means it could change without warning. To have a static IP you have to tell your ISP provider. But why dynamic IP?: It is solely a numerical issue. There are a countless number of computer users connected to the Internet simultaneously all over the world. Some people use the Internet frequently, while others only occasionally, and occasionally only long enough to write an email. Every person who is available on the internet needs a distinct IP address, as was already mentioned. When you consider all the logistics involved, it would have been extremely costly to assign a fixed, static IP to each and every ISP subscriber. Additionally, the number of static IP addresses might have quickly run out with the current IP address generation (basically IPv4).Dynamic IP addresses were subsequently introduced to the world of the Internet. This made it possible for ISPs to give their customers a dynamic IP address as needed. Every time you go online, that IP address is essentially "loaned" to you.
+- Hence, you may also observe a change in your macbook/host IP if you switch from wifi to mobile hotspot for your macbook internet connectivity. (In following tasks, your host IP will play an important role in connecting the microservices, hence keep note of this point)
+- We can ask how is docker able to route the connection from container to host machine via bridge network concept?:
+  - Bridge Network Creation: By default, Docker containers are connected to a bridge network. This is an internal virtual network that allows containers to communicate with each other and the host machine.
+  - Container-to-Host Communication: When you specify the host machine's IP address in the container, the container's networking stack knows to route the traffic out of the container to the host machine's network interface.
+  - Network Address Translation (NAT): Docker uses Network Address Translation to map container ports to host ports. When a container tries to access an IP address and port, Docker's networking translates these into appropriate network requests.
+  - To access a service running on the host machine from a Docker container, you specify the host machine's IP address. For example, if your host machine's IP address is 192.168.1.100, you can configure your application to connect to this IP.
 
 ![all running docker containers on local](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/9allimages.png)
 
 #### **Task8**: Use docker compose and integrate all 3 services (fastapi app, postgres, redis) and tighten up the coupling? 
-A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
-Can check the docker-compose.yaml file for reference. Do ensure docker/podman compose utilities are installed as they need to be installed seaprately and do not come packed with usual docker/podman. 
-To build the compose file: `docker-compose build` (or `podman-compose build`). Note you can remove `-` and run command as well like: `podman compose build`. 
-To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode add `-d` flag. 
-Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or `podman-compose up --build`)
-To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers. 
-Note that in docker file I have made the CMD command to run both app.py fastapi server as well as main.py fastapi server. Though we won't be able to get the status in the usual way from app.py to main.py; Same is objective in next task.  
-To run an individual component of docker compose (docker/podman): `podman-compose up <service_name>`
-To enter into the container bash/terminal from compose (docker/podman): `podman-compose exec postgreslocalservice bash`
+
+- A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. (More details added in docker-compose.yaml file in the project)
+- Can check the docker-compose.yaml file for reference. Do ensure docker/podman compose utilities are installed as they need to be installed seaprately and do not come packed with usual docker/podman.
+- To build the compose file: `docker-compose build` (or `podman-compose build`). Note you can remove `-` and run command as well like: `podman compose build`.
+- To run it: `docker-compose up` (or `podman-compose up`); To run in detached mode add `-d` flag.
+- Then you can access the service on from browser/postman. You may also use: `docker-compose up --build` (or `podman-compose up --build`)
+- To stop and remove containers created by docker-compose up, use Ctrl+C in the terminal where it's running or use: `docker-compose down`. If you add `-v` flag in docker-compose down it will remove the volumes as well apart from stopping containers.
+- Note that in docker file I have made the CMD command to run both app.py fastapi server as well as main.py fastapi server. Though we won't be able to get the status in the usual way from app.py to main.py; Same is objective in next task.
+- To run an individual component of docker compose (docker/podman): `podman-compose up <service_name>`
+- To enter into the container bash/terminal from compose (docker/podman): `podman-compose exec postgreslocalservice bash`
 
 ![docker compose containers](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/14dockercomposecontainers.png)
 ![redis status from fastapi app running via compose](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/15serverhealthy.png)
@@ -557,7 +565,9 @@ To enter into the container bash/terminal from compose (docker/podman): `podman-
 ![view docker volume attached to a container in compose](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/35view_docker_volumes_in_a_container.png)
 
 #### **Task9**: Ensure you are able to get status of main.py server in sampleService from app.py service from the docker-compose file?
+
 If we see the current way in which we get status of main app server is: 
+
 ```
 @app.get("/mainappstatus")
 def get_other_server_status():
@@ -567,40 +577,43 @@ def get_other_server_status():
     data = json.loads(response.text)
     return data
 ```
-But now, since we are considering spinning up the multiple fastapi servers inside the container - to be able to access them from our host machine (i.e macbook) - we need to be able to map a host machine port to that service port, and then anyways we are aware of the concept of docker bridge network, etc., it will be able to get the status. 
-Changes to do the same have been made in the docker compose file. 
+But now, since we are considering spinning up the multiple fastapi servers inside the container - to be able to access them from our host machine (i.e macbook) - we need to be able to map a host machine port to that service port, and then anyways we are aware of the concept of docker bridge network, etc., it will be able to get the status. Changes to do the same have been made in the docker compose file. 
+
 To explain in other way: 
-In Docker Compose, the ports directive is used to map ports from the host machine to the container. This allows services running inside the container to be accessible from the host machine.
-Mapping ports is essential because containers are isolated environments, and by default, the services running inside them are not accessible from the outside world. By mapping a container's port to a port on the host machine, you make the service inside the container accessible from outside the container, using the host's IP address and the mapped port.
-If we observe current docker-compose file:
-"4500:8900": This maps port 8900 inside the container to port 4500 on the host machine. It means that if you access http://localhost:4500 from browser/postman on your host machine, it will be directed to the service running on port 8900 inside the container.
-Then - Change that we made: "4501:8901": This maps port 8901 inside the container to port 4501 on the host machine. It means that if you access http://localhost:4501 from browser/postman on your host machine, it will be directed to the service running on port 8901 inside the container.
-If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them:
-Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: http://localhost:4500
-For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: http://localhost:4501
-This is the case when we are accessing them from our browser/postman. 
-But now, if I want to check the health of main.py server from app.py server - remember both of them are running in the same container environment - so the request in code will be from one port to another inside the container itself not on host machine. 
-This is an inter-service communication - for this we leverage docker (or podman) compose’s internal DNS resolution, allowing one service to communicate with another by using its service name.
-Hence the url we hit to changed to: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`
-To reiterate simply, to access main.py app server - there are 2 ways: 
-One, we type-in the url from our browser/postman (which is host machine) and access the main.py server running inside container - which we did by port mapping 4501:8901. 
-Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
+
+- In Docker Compose, the ports directive is used to map ports from the host machine to the container. This allows services running inside the container to be accessible from the host machine.
+- Mapping ports is essential because containers are isolated environments, and by default, the services running inside them are not accessible from the outside world. By mapping a container's port to a port on the host machine, you make the service inside the container accessible from outside the container, using the host's IP address and the mapped port.
+- If we observe current docker-compose file: "4500:8900"; This maps port 8900 inside the container to port 4500 on the host machine. It means that if you access http://localhost:4500 from browser/postman on your host machine, it will be directed to the service running on port 8900 inside the container.
+- Then - Change that we made: "4501:8901": This maps port 8901 inside the container to port 4501 on the host machine. It means that if you access http://localhost:4501 from browser/postman on your host machine, it will be directed to the service running on port 8901 inside the container.
+- If you have two FastAPI applications running on different ports (8900 and 8901) inside the same container, you need to map both ports to the host machine to access them: Primary FastAPI Application: Internal port: 8900, Mapped host port: 4500, Access via: http://localhost:4500
+- For this: Secondary FastAPI Application: Internal port: 8901, Mapped host port: 4501, Access via: http://localhost:4501
+- This is the case when we are accessing them from our browser/postman.
+- But now, if I want to check the health of main.py server from app.py server - remember both of them are running in the same container environment - so the request in code will be from one port to another inside the container itself not on host machine.
+- This is an inter-service communication - for this we leverage docker (or podman) compose’s internal DNS resolution, allowing one service to communicate with another by using its service name.
+- Hence the url we hit to changed to: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`
+- To reiterate simply, to access main.py app server - there are 2 ways:
+  - One, we type-in the url from our browser/postman (which is host machine) and access the main.py server running inside container - which we did by port mapping 4501:8901.
+  - Two, we type-in url to access app.py server running inside container since it is already exposed. And then we define an endpoint inside app.py server which internally communicates with main.py server - which is what we did in this particular url case: `url = 'http://businessmicroservice:8901/currentmainstatusdockercompose'`. With `businessmicroservice:8901`, we ensured our app.py server is able to access main.py server inside container. Else, we get `ERROR: requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=8901): Max retries exceeded with url`
 
 #### **Task10**: Build a simple consumerMicroservice app pinging root server of businessMicroservice? 
-Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. Also ensured by venv is activated. 
-Since consumerMicroservice is a separate service altogether I am spinning it up manually from Docker. 
-Docker compose is not needed as its just 1 service. From docker compose anyways I have spinned up businessMicroservice app/ postgres/ redis.
-Command used (docker/podman): 
-`podman build --no-cache -t cmserviceimage .`
-Once image was build, to run container (BUT DO CHECK BELOW NOTES): `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` - Connecting host's 3500 port with 6800 port of container (Note check Dockerfile - I am exposing port 6800 of container where the consumer service fastapi server is running using uvicorn)
+
+Wrote Dockerfile of the consumerMicroservice and fastapi code to ping to businessMicroservice app. Also ensured by venv is activated. Since consumerMicroservice is a separate service altogether I am spinning it up manually from Docker. Docker compose is not needed as its just 1 service. From docker compose anyways I have spinned up businessMicroservice app/ postgres/ redis.
+
+Command used (docker/podman): `podman build --no-cache -t cmserviceimage .`
+
+Once image was build, to run container (THERE IS A CAVEAT HERE - SO KEEP FOLLOWING; DETAILS EXPLAINED ON THIS BELOW): `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` - Connecting host's 3500 port with 6800 port of container (Note check Dockerfile - I am exposing port 6800 of container where the consumer service fastapi server is running using uvicorn)
+
 In app.py code of both consumer & business microservice, see the url is connecting to the fast api server running in another container; Though understand that both containers are running in same host machine (my macbook). 
+
 Recall that: A network is a group of two or more devices that can communicate with each other either physically or virtually. The Docker network is a virtual network created by Docker to enable communication between Docker containers. If two containers are running on the same host they can communicate with each other without the need for ports to be exposed to the host machine.
+
 In our case, we put our docker compose containers from businessMicroservice in a network named: `bmservice_compose_network`
+
 We use this and connect our consumerMicroservice which is an external container. 
 In businessMicroservice: Defined `/bmserviceserverstatus` to return response when we hit a service running in another container; url we are hitting: `http://businessmicroservice:8901/bmserviceserverstatus` - Recall we are running the app server using docker compose at port 8901 in businessMicroservice, for run via normal docker (without compose) or from host we use different  ports as seen in earlier tasks, but for testing current task we have activated this port by keeping the service up using docker compose and it is running in network: `bmservice_compose_network`. 
-In consumerMicroservce: From host machine I hit `/bmservicestatus` endpoint to get `/bmserviceserverstatus` defined in businessMicroservice
-ALERT NOTE: Upon running earlier command: `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` and hitting `http://0.0.0.0:3500/bmservicestatus` on browser/postman did not yield me any response from other container. Why?: It was because the containers running via compose are on a different network. Hence I need to connect the container to that network; It can be done by running (docker/podman): 
-`podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` - network added. (Note rebuild image and then run, also ensure the directory you are building your dockerfile and all - don't mess up here)
+
+In consumerMicroservce: From host machine I hit `/bmservicestatus` endpoint to get `/bmserviceserverstatus` defined in businessMicroservice; RECALL THE CAVEAT HIGHLIGHTED EARLIER: Upon running earlier command: `podman run -p 3500:6800 --name cmservicecontainer cmserviceimage` and hitting `http://0.0.0.0:3500/bmservicestatus` on browser/postman did not yield me any response from other container. Why?: It was because the containers running via compose are on a different network. Hence I need to connect the container to that network; It can be done by running (docker/podman): `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` - network added. (Note rebuild image and then run, also ensure the directory you are building your dockerfile and all - don't mess up here)
+
 Note that - we can also imagine coupling the consumerMicroservice inside the same docker-compose file as well specifying the path (build context as something like `./consumerMicroservice` than giving `.`) and have all services - businessMicroservice, postgres, redis, etc running up altogether. But we are restricting now as a fundamental understanding has been developed by this far and we can try avoiding cluttering things more... 
 
 ![all running docker networks in local](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/18dockernetworklist.png)
@@ -608,58 +621,58 @@ Note that - we can also imagine coupling the consumerMicroservice inside the sam
 ![response when consumerMicroservice app hits businessMicroservice app health check api](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/19serverhealth.png)
 
 #### **Task11**: Publish the docker-compose file having businessMicroservice, postgres, redis to dockerhub and check if another developer can pull the image and run it on their machine?
+
 Commands ran: 
-When in dir: `/consumerMicroservice`: ` podman build --no-cache -t frpconsumermicroservicedockersrj .`
-When in dir: `/businessMicroservice`: `podman compose build` and `podman build --no-cache -t frpbusinessmicroservicedockersrj .`
-To push `frpconsumermicroservicedockersrj`:
+- When in dir: `/consumerMicroservice`: ` podman build --no-cache -t frpconsumermicroservicedockersrj .`
+- When in dir: `/businessMicroservice`: `podman compose build` and `podman build --no-cache -t frpbusinessmicroservicedockersrj .`
+- To push `frpconsumermicroservicedockersrj`:
+
 ```
 podman login -u surajv311 -p <my_password>  docker.io/surajv311/frpconsumermicroservicedockersrj
 podman images  (to select the image_id and run below command)
 podman push 8caafac0cb3c docker://docker.io/surajv311/frpconsumermicroservicedockersrj:1.0.0  
 ```
+
 Link: https://hub.docker.com/r/surajv311/frpconsumermicroservicedockersrj
+
 To push `frpbusinessmicroservicedockersrj`:
+
 ```
 podman login -u surajv311 -p <my_password>  docker.io/surajv311/frpbusinessmicroservicedockersrj
 podman images  (to select the image_id and run below command)
 podman push 23ed0e8617b5 docker://docker.io/surajv311/frpbusinessmicroservicedockersrj:1.0.0
 ```
+
 Link: https://hub.docker.com/r/surajv311/frpbusinessmicroservicedockersrj
-As a sidenote, if we see, our postgres container is named `postgreslocalservice-1` in Docker desktop/Podman, though in our docker compose file we have named container as `container_name: postgreslocalcontainer`.
-(Discussed before): 
-To get into container bash, use the defined name only, i.e: (docker/podman) `podman exec -it postgreslocalcontainer bash`
-To get into the db inside container: `psql -U postgresdluser -d fapidb`
-Table query: `fapidb=# select * from tpsqltable limit 10;`
+
+As a sidenote, if we see, our postgres container is named `postgreslocalservice-1` in Docker desktop/Podman, though in our docker compose file we have named container as `container_name: postgreslocalcontainer`. (Discussed before): 
+- To get into container bash, use the defined name only, i.e: (docker/podman) `podman exec -it postgreslocalcontainer bash`
+- To get into the db inside container: `psql -U postgresdluser -d fapidb`
+- Table query: `fapidb=# select * from tpsqltable limit 10;`
 
 #### **Task12**: Build CRUD operations in databases (postgres, redis) logic in businessMicroserviceApp and expose the endpoints to consumerMicroserviceApp. Hence use consumerMicroserviceApp to alter the data using businessMicroserviceApp as intermediary. 
-Task complete, we can check the corresponding app.py, config and schema files. 
-Let us revisit the flow of the way project is developed: 
-First: 
-- We ran our fastapi servers inside host machine at ports 8000 and 8001 using commands: `uvicorn app:app --port 8000 --reload`
 
-Second: 
+Task complete, we can check the corresponding app.py, config and schema files. Let us revisit the flow of the way project is developed: 
+**First**: 
+- We ran our fastapi servers inside host machine at ports 8000 and 8001 using commands: `uvicorn app:app --port 8000 --reload`
+**Second**: 
 - We spawn up Redis and Postgres docker containers on same host machine using commands like (docker/podman): `docker run --name redislocal -p 7001:6379 redis`, `docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres`.
 - Understand we can access them from port 7001/7002 of host machine, but if we hit directly - we won't get response as it's a database server, not web server. The postgres url we hit from fastapi server running on port 8000: `POSTGRES_DB_URL=postgresql://postgresdluser:1234@localhost:7002/fapidb`. Observe the host address: `localhost:7002`
-
-Third:
+**Third**:
 - Tested async-sync versions of code, load tested APIs, populated postgres table with 1M+ rows, etc. 
-
-Fourth: 
+**Fourth**: 
 - Containerized the fastapi server. So now, instead of it running on host, it will run a level below the surface which is a container. 
 - Created Dockerfile for the fastapi app. Exposed a port with which I can communicate from host/browser/postman to the server running inside the container (port mapping).
 - Also, explicitly update Dockerfile for the container to except request from outside interface by adding a flag in uvicorn command: `--host 0.0.0.0`
 - Commands (docker/podman): `podman build --no-cache -t bmserviceimage .`, `podman run -p 4500:8900 --name bmservicecontainer bmserviceimage`
-
-Fifth: 
+**Fifth**: 
 - Ensure my dockerized fastapi app server running inside container can interact with other postgres/redis containers. 
 - Understand that now the command ground is the host - having 3 running containers which have to interact with eachother. Earlier, our fastapi app was running on browser/host itself which is kind of on the surface than a level beneath i.e container. 
 - We had to ensure that now Redis/Postgres hosts are also updated - so postgres db url became: `POSTGRES_DB_URL=postgresql://postgresdluser:1234@192.168.29.72:7002/fapidb`. Observe we switched from localhost to host IP: `192.168.29.72`. So port `7002` exposed of the machine to enter the microservice/container.  
 - Now the flow is like to check the db status/health: I hit a url in my browser/host/postman with host 4500/<api>. This 4500 port is mapped to a port inside container where my fastapi server is running - so the request travels to port 8900 (port mapping) inside container. Now the container wouldn't directly allow any request from any entity, hence recall we had whitelisted requests by specifically adding `-host 0.0.0.0` keyword in uvicorn fastapi app when it is spawn up in Dockerfile (Note this is the default host that needs to be added - I tried making host as 127.0.0.1 or a different one, but that doesn't work - so basically this is the only host port which is allowed so when I hit api from my browser or postman - I do not hit 127.0.0.1/<api> or localhost/<api>, rather 0.0.0.0/<api> - as this is whitelisted). So container allows request from host to hit the server. Now, fastapi server has an API endpoint say: `syncphealth` to check postgres health. When I hit this API from 0.0.0.0/<syncphealth>; if you check the code, upon hitting the api it initiates a postgres db session from SessionLocal(). Inside SessionLocal() code, another switch happens which was the host port is changed from localhost to machine ip address (check previous point), thereby brining our service on common ground which is the host machine. Docker handles this internally using NAT, Docker bridge, etc, and hence our fastapi server running inside a container is able to hit the postgres container running on host - as url is updated to leverage host machine address. Similar, case for redis. 
-
-Sixth:
+**Sixth**:
 - Exposed/ spawn up another service inside same container running on port: `4501:8901`. So 8900 service interacted with 8901 service. 
-
-Seventh:
+**Seventh**:
 - Docker composed fastapi container (businessMicroservice), postgres container, redis container in the same network named `bmservice_network`. 
 - Later created another microservice (consumerMicroservice mapped from `3500:6800` host-container service port mapping) but it could not directly hit the fastapi/postgres/redis containers as they were a part of a network. 
 - I had to spawn up the consumerMicroservice in same network using (docker/podman): `podman run --network bmservice_compose_network -p 3500:6800 --name cmservicecontainer cmserviceimage` and was able to hit the APIs.
@@ -667,23 +680,18 @@ Seventh:
 ![all docker compose services now](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/24all_dockercompose_services.png)
 ![how to hit a post request in postman](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/30postgresCRUD_postapi_request_body_options_postman.png)
 ![hitting postgres db to fetch records from API if there are no records - error pic](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/16serverhealth-postgres-but-no-data-in-table-data-not-persisted.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/20postgresCRUD_getapi.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/21postgresCRUD_putapi.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/22postgresCRUD_deleteapi.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/23postgresCRUD_postdeletegetapi.png)
+![postgres crud - get api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/20postgresCRUD_getapi.png)
+![postgres crud - put api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/21postgresCRUD_putapi.png)
+![postgres crud - delete api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/22postgresCRUD_deleteapi.png)
+![postgres crud - post api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/23postgresCRUD_postdeletegetapi.png)
 ![validating CRUD operations data inside postgres container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/29checking_inside_postgres_container_after_POST_api_call_from_code.png)
 ![hitting businessMicroservice app apis from consumerMicroservice app eg 1](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/25crudapisexample.png)
 ![hitting businessMicroservice app apis from consumerMicroservice app eg 2](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/27consumerMicroservice_hitting_businessMicroserviceAPI_get_postgres_data.png)
 ![pydantic response validation error if our api response is not inline with defined schema eg 1](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/26_pydantic_response_validation_error_ref.png)
 ![pydantic response validation error if our api response is not inline with defined schema eg 2](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/28missing_field_validation.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/32redisCRUD_getapi.png)
-![](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/33redisCRUD_postapi.png)
+![redis crud - get api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/32redisCRUD_getapi.png)
+![redis crud - post api response](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/33redisCRUD_postapi.png)
 ![validating CRUD operations data inside redis container](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/34checking_inside_redis_container_after_POST_api_call_from_code.png)
-![]()
-![]()
-![]()
-![]()
-![]()
 
 #### **Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
 
