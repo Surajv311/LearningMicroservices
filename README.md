@@ -357,7 +357,7 @@ Observation for async vs sync load testing: `http_req_duration: avg=1.26s vs avg
 
 ![k6 async code stress test](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/2async%20code%20stress%20test.png)
 
-Note: After doing stress test on this, my server went down and not responding ~ http://127.0.0.1:8000/ took too long to respond. Tried restarting app running on port 8000, then postgres/redis containers, still things did not work, so in the end had to kill the processes using `kill -9 <pid>` and then restarted the services using uvicorn. 
+Note: After doing stress test on this, my server went down and not responding ~ `http://127.0.0.1:8000/` took too long to respond. Tried restarting app running on port 8000, then postgres/redis containers, still things did not work, so in the end had to kill the processes using `kill -9 <pid>` and then restarted the services using uvicorn. 
 
 Then did the stress testing using ab (Apache benchmark). Read docs/ videos. 
 - Simple command eg. that can be used in terminal (no prior setup was needed in my mac, probably it came pre-installed): `ab -k -c 10 -n 50 http://127.0.0.1:8000/asyncrpstatus`. Command means: We will be hitting the endpoint with 10 simultaneous connections until 50 requests are met. It will be done using the keep alive header `-k` used.
@@ -709,13 +709,18 @@ Task complete, we can check the corresponding app.py, config and schema files. L
 
 #### **Task17**: Add poetry to lock the packages?
 
-Bugs found: Data not persisintg in vole and vanishing whne contnainer restarts why?
-bug CMD ["./run-server.sh"] - does not work
+------------------------------------
+
+#### Bugs found: 
+
+- Even after adding volumes in docker compose file for postgres/redis. It has been observed that if I restart/terminate-start the containers; the data is not persisted. Fix it.
+- In dockerfile for businessMicroservice to start fastapi server - either I could define and trigger the uvicorn command from dockerfile, or define the command in a `sh` file and then trigger it; In second approach when I trigger it from sh file, I get error. Fix it. (Error: `preparing container for attach: crun: open executable: Permission denied: OCI permission denied`)
 
 ------------------------------------
 
-References/ Other notes: (refactor this part later...)
-(WIP part...)
+#### Other learnings: 
+
+Apart from the info I've written in the tasks in readme, or the comments I have added in code, some other things learned: 
 
 https://dbeaver.io/ - dbeaver to see postgres gui
 https://stackoverflow.com/questions/20778771/what-is-the-difference-between-0-0-0-0-127-0-0-1-and-localhost
@@ -828,4 +833,3 @@ https://realpython.com/dependency-management-python-poetry/
 https://www.geeksforgeeks.org/how-to-add-python-poetry-to-an-existing-project/
 
 ------------------------------------
-
