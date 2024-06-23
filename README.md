@@ -701,6 +701,11 @@ Task complete, we can check the corresponding app.py, config and schema files. L
 
 #### **Task13**: Run the businessMicroservice in 2 instances. And your consumerMicroservice app should be pinging root server of the different isntances of businessMicroservice app in round-robin fashion; In case it the service dies in one port, then redirect all request to other port - similar to how a simple load balancer would work? 
 
+A rough overview of how our ports and services are mapped until now in docker compose: 
+![overview of services until now](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/Fapi_project.drawio.png)
+
+Now,...(WIP)
+
 #### **Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
 
 #### **Task15**: Setup Kafka manually or via docker on local. Create JSON events from a service and publish it to Kafka service?
