@@ -705,6 +705,10 @@ A rough overview of how our ports and services are mapped until now in docker co
 ![overview of services until now](https://github.com/surajvm1/LearningMicroservices/blob/dev/feat1/snapshot_references/Fapi_project.drawio.png)
 
 Now,...(WIP)
+For ref later: https://www.reddit.com/r/docker/comments/mje7u2/dockercompose_dynamically_static_port_assignments/
+Dynamically do port mapping for multiple services? Is it possible? 
+gpt says: To run two instances of the businessmicroservice service in Docker using docker-compose, you can use a feature called "replicas" which is available in Docker Compose version 3.4 and higher. However, to ensure each instance maps to a different port on the host, you will need to define separate services for each instance, as Docker Compose does not support dynamic port mapping for replicated services.
+But will reddit link help? 
 
 #### **Task14**: Setup another NoSQL db like mongodb via docker and health check mongodb service?  
 
