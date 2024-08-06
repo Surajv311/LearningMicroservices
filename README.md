@@ -4,7 +4,7 @@
   - We must have 2 applications say: `businessMicroservice` and `consumerMicroservice`. 
   - Consider having the following db containers running as well locally: `postgresql`, `redis`, `mongodb`, etc.
   - `businessMicroservice` should have endpoints which check the health of db containers, query over tables in the db's, and have the ability to perform basic CRUD operations. 
-  - Containzerize the application. 
+  - Containerize the application. 
   - We should be able to spin up multiple instances of the microservice running on different ports. There should be APIs which capture status of another port from a given port.
   - Later, `consumerMicroservice` should be designed to mimic how a user/entity would interact with APIs in `businessMicroservice`. In short, allow 2 microservices to communicate with one another. 
   - Try running `businessMicroservice` in 2 container instances in different ports. And then your `consumerMicroservice` should send request to each of the running containers of `businessMicroservice` in round-robin fashion, kind of acting like a load balancer.
@@ -49,7 +49,7 @@ We will work around developing `businessMicroservice` so activate the env. We ca
 Open 2 terminals and `cd` into the directory for business & consumer service and activate the env. 
 In my case: (Eg)
 - `cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/consumerMicroservice`, and then: `source bin/activate`
-- `cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`, and then: ``source bin/activate`
+- `cd /Users/suraj/Desktop/projectsSimpl/fastapiproject/fapi/businessMicroservice`, and then: `source bin/activate`
 
 Current focus is on developing `businessMicroservice`. Activate the venv (as shown above and then):
 
