@@ -1,0 +1,200 @@
+## For Task8
+version: '3' # basically version of docker compose format I am using, version 3 is popular...
+
+networks: # A Docker network is a virtual network created by Docker to enable communication between Docker containers. This virtual network facilitates the interaction between containers, whether they're on the same host or different hosts, depending on the type of network used.
+  bmservice_network: # we are using this network to run all containers. Note that if this is not specified docker gives a default name to the network based on project name (can be checked using command docker or podman network ls), eg in this case, the default network would have been businessmicroservice_default - but for sake of learning we are renaming our network and defining same in other containers
+    name: bmservice_compose_network # to inspect a network: podman network inspect bmservice_compose_network
+
+services: # we define all container services we want to run together in 1 shot, rather than individually running up all containers like my fastapi service, postgres service, redis service, by individually running docker commands
+  businessmicroservice:
+    ## To build the fastapi businessmicroservice, we have 3 ways in which we can define below
+    ## Way 1:
+    #build: . # this means build the current directory where the Dockerfile is present, we could provide specific path as well if required. If no Dockerfile in the current path then the step will fail... The command to spin up the service using unicorn would anyways be present in Dockerfile as we know
+    ## Way 2:
+    build:
+      context: .  # Use the current directory as the build context
+      dockerfile: Dockerfile  # This is optional if the Dockerfile is named 'Dockerfile'
+    ## Way 3:
+    #build: . # Use the current directory as the build context
+    #command: sh -c "uvicorn app:app --host 0.0.0.0 --port 8900 --reload" # The command directive specifies the command to start the application within the container after it has been built - though may not really be needed as in our current case we have defined a uvicorn command in Dockerfile if we see, had it not been there and we wanted to start service via docker compose way, then we would have to use the command argument here
+    container_name: bmservicecontainer # To set custom container names in Docker Compose, you can utilize the container_name field within your service definition.
+    ports:
+      - "4500:8900" # port mapping done so that this container can access APIs which do postgres/redis health check. Remember we manually run command like this to do the same: podman (or docker) run -p 4500:8900 --name bmservicecontainer bmserviceimage
+      ## For Task9
+      - "4501:8901" # To be able to access main.py server health from host machine we did port mapping. We know already in dockerfile when we spin up both app.py & main.py servers - we expose them to 8900 and 8901. Now from host machine to access the servers uniquely we need to port map - same code is updated in app.py as well
+      # More explanation added in Readme file under Task9 section
+      #############
+    environment: # these are the environment variables we can define them here and later from code file we can use os.env() and pick them up there - defined same in config files in databases/ folder
+      APP_MODE_DOCKER: docker_compose_mode # defined this variable so that appropriate condition is picked up in postgresDbConfig or redisDbConfig files.
+      POSTGRES_HOST: 192.168.29.72 # we know why we are using our macbook machine IP as the postgres host, explained earlier: Each Docker container has its own network stack. localhost within a Docker container refers to the container itself, not the host machine. By default, Docker containers are attached to a default network (bridge network) which isolates them from the host network and from each other unless configured otherwise. By default, Docker containers are connected to a bridge network. To allow your FastAPI container to communicate with PostgreSQL/Redis running on the host machine (in our case it is macbook), you should use the host machine's IP address. So its like host machine is a common ground/platform for multiple containers running inside it, so any request should be routed via the machine so that it can exactly know which container is interacting with which one - in a rough explanation. We can get our local machine IP using ifconfig etc... image if it were AWS EC2 machine, there also we could anyways get the IP of the machine.
+      POSTGRES_PORT: 7002
+      POSTGRES_USER: postgresdluser
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: fapidb
+      REDIS_HOST: 192.168.29.72
+      REDIS_PORT: 7001
+    depends_on: # our app depends on postgres and redis images also spawning up - as we have APIs which health check these db containers... hence added this condition
+      - postgreslocalservice
+      - redislocalservice
+    networks:
+      - bmservice_network
+
+  postgreslocalservice:
+    image: postgres:16 # we are using v16 when we check podman or docker inspect postgreslocal so using same image in docker compose file
+    # we could also do: image: postgres:latest
+    container_name: postgreslocalcontainer
+    environment: # similar to what we defined earlier
+      POSTGRES_USER: postgresdluser
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: fapidb
+    ports:
+      - "7002:5432" # we are doing port mapping here, earlier explained in Readme file: This flag maps port 5432 inside the container (the default port PostgreSQL listens on) to port 7002 on the host machine. 7002 is the port on the host machine. 5432 is the port inside the container. This allows you to connect to PostgreSQL on your host machine using localhost:7002. But remember that PostgreSQL listens for database connections on its port (in this case, 5432 mapped to 7002), but it does not serve web pages or respond to HTTP requests. So if you search for http://localhost:7002/ on your browser or postman - you won't get any response, though via fastapi code, since when you check health status you use libraries like psycopg, and postgres related libraries, your usual api request under the hood is converted in the way the postgres db server expects and gives back appropriate response
+      # Recall when we spawn up the container we used: docker run --name postgreslocal -p 7002:5432  -e POSTGRES_PASSWORD=1234 -e POSTGRES_USER=postgresdockerlocal postgres command; The same would be done here when the docker-compose file is used rather than we manually spinning up the container.
+    volumes:
+      - pgdata:/dbdata/postgresqlvolume # Changes made to a container’s environment are lost when the container stops, crashes, or gets replaced. You can Dockerize stateful applications such as databases and file servers by attaching volumes to your containers. Volumes provide persistent storage that’s independent of individual containers. You can reattach volumes to a different container after a failure or use them to share data between several containers simultaneously. Volumes are a mechanism for storing data outside containers. All volumes are managed by Docker and stored in a dedicated directory on your host, usually /var/lib/docker/volumes for Linux systems.
+      # Under the hood, above command would run 2 commands: [docker volume create pgdata] and [docker run -v pgdata:/dbdata/postgresqlvolume -p 7002:5432 ...all credentials command... postgres]
+      # Inside the container it will create volume pgdata at the path /dbdata/postgresqlvolume. We can literally go into the container shell for postgres using docker exec -it... and cd over to the directory and see it
+    networks:
+      - bmservice_network
+
+  redislocalservice:
+    image: redis:6 # validated with local image I am running using podmand/docker inspect redislocal it is v6 only as a part of previous tasks
+    container_name: redislocalcontainer
+    ports:
+      - "7001:6379" # port mapping - though as discussed earlier even if we search for localhost/7001 or 0.0.0.0/7001 - we won't get a response as this is a database server and serves db request/response and not a web server whose response could be rendered in browser...similarly case of redis...
+    volumes:
+      - redisdata:/dbdata/redisvolume # similar to above, in redis container, this is where the volume would mount
+    networks:
+      - bmservice_network
+
+volumes:
+  pgdata:
+  redisdata:
+
+###################################################################################################
+# A Docker Compose file, typically named docker-compose.yml, is used to define and manage multi-container Docker applications. It allows you to define services, networks, and volumes in a single YAML file, providing a streamlined way to manage your Docker environment. Below are the primary components of a Docker Compose file:
+# 1. version
+# The version key specifies the version of the Docker Compose file format. The most common versions are 2, 2.1, 3, and 3.8.
+# version: '3.8'
+# 2. services
+# The services key is where you define the different services (containers) that make up your application. Each service can be configured with various options.
+# services:
+#   web:
+#     image: nginx:latest
+#     ports:
+#       - "80:80"
+#   db:
+#     image: postgres:latest
+#     environment:
+#       POSTGRES_DB: mydatabase
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+# 3. networks
+# The networks key allows you to define custom networks for your services. This is useful for setting up isolated network environments for your containers.
+# networks:
+#   mynetwork:
+#     driver: bridge
+# You can then assign services to these networks:
+# services:
+#   web:
+#     image: nginx:latest
+#     networks:
+#       - mynetwork
+#   db:
+#     image: postgres:latest
+#     networks:
+#       - mynetwork
+# 4. volumes
+# The volumes key allows you to define shared storage volumes that can be used by your services. Volumes are useful for persisting data across container restarts.
+# volumes:
+#   myvolume:
+# You can then mount these volumes in your services:
+# services:
+#   db:
+#     image: postgres:latest
+#     volumes:
+#       - myvolume:/var/lib/postgresql/data
+# Common Service Configuration Options
+# image: Specifies the Docker image to use for the service.
+# image: nginx:latest
+# build: Specifies build configuration for the service. It can point to a directory with a Dockerfile or define build arguments.
+# build:
+#   context: ./path/to/build/context
+#   dockerfile: Dockerfile
+# ports: Maps ports on the host to ports in the container.
+# ports:
+#   - "80:80"
+# environment: Defines environment variables for the service.
+# environment:
+#   POSTGRES_DB: mydatabase
+#   POSTGRES_USER: user
+#   POSTGRES_PASSWORD: password
+# volumes: Mounts host directories or named volumes into the container.
+# volumes:
+#   - myvolume:/var/lib/postgresql/data
+#   - ./localdir:/containerdir
+# networks: Connects the service to one or more networks. Whether you need to use the networks directive in your Docker Compose file depends on your application's networking requirements. For simpler applications where services communicate primarily via default network mechanisms (service name resolution), the default behavior may suffice. However, for more complex networking scenarios or when specific network isolation and management are required, defining custom networks can provide better control and flexibility.
+# networks:
+#   - mynetwork
+## Other example of networks:
+#services:
+#  app1:
+#    build: .
+#    networks:
+#      - backend_network
+#  app2:
+#    image: nginx:latest
+#    networks:
+#      - backend_network
+# depends_on: Specifies dependencies between services. Docker Compose will start the dependencies before starting the service.
+# depends_on:
+#   - db
+# command: Overrides the default command for the container.
+# command: python app.py
+# entrypoint: Overrides the default entrypoint for the container.
+# entrypoint: /app/entrypoint.sh
+# Here's a full example of a docker-compose.yml file for a web application with a database:
+# version: '3.8'
+# services:
+#   web:
+#     image: nginx:latest
+#     ports:
+#       - "80:80"
+#     networks:
+#       - mynetwork
+#     depends_on:
+#       - app
+#   app:
+#     build:
+#       context: ./app
+#     networks:
+#       - mynetwork
+#     environment:
+#       - DATABASE_URL=postgres://user:password@db:5432/mydatabase
+#     volumes:
+#       - ./app:/app
+#   db:
+#     image: postgres:latest
+#     networks:
+#       - mynetwork
+#     environment:
+#       POSTGRES_DB: mydatabase
+#       POSTGRES_USER: user
+#       POSTGRES_PASSWORD: password
+#     volumes:
+#       - myvolume:/var/lib/postgresql/data
+# networks:
+#   mynetwork:
+#     driver: bridge
+# volumes:
+#   myvolume:
+# In this example:
+# web service uses the Nginx image and maps port 80.
+# app service builds from a local context and connects to the same network as the web service.
+# db service uses the PostgreSQL image and stores its data in a named volume.
+# All services are connected to a custom bridge network.
+# Environment variables are used to configure the services, and volumes are used to persist data and share files between the host and containers.
+
+## Good link/note: Docker containers are easiest to use with stateless applications because their filesystems are ephemeral in nature. Changes made to a container’s environment are lost when the container stops, crashes, or gets replaced. You can Dockerize stateful applications such as databases and file servers by attaching volumes to your containers. Volumes provide persistent storage that’s independent of individual containers. You can reattach volumes to a different container after a failure or use them to share data between several containers simultaneously. Volumes are a mechanism for storing data outside containers. All volumes are managed by Docker and stored in a dedicated directory on your host, usually /var/lib/docker/volumes for Linux systems. Volumes are mounted to filesystem paths in your containers. When containers write to a path beneath a volume mount point, the changes will be applied to the volume instead of the container’s writable image layer. The written data will still be available if the container stops – as the volume’s stored separately on your host, it can be remounted to another container or accessed directly using manual tools. Bind mounts are another way to give containers access to files and folders on your host. They directly mount a host directory into your container. Any changes made to the directory will be reflected on both sides of the mount, whether the modification originates from the host or within the container. Bind mounts are best used for ad-hoc storage on a short-term basis. They’re convenient in development workflows. For example: bind mounting your working directory into a container automatically synchronizes your source code files, allowing you to immediately test changes without rebuilding your Docker image. Volumes are a better solution when you’re providing permanent storage to operational containers. Because they’re managed by Docker, you don’t need to manually maintain directories on your host. There’s less chance of data being accidentally modified and no dependency on a particular folder structure. Volume drivers also offer increased performance and the possibility of writing changes directly to remote locations.
+
+## Note: We cannot push docker-compose files to dockerhub, hence I cannot create an image out of this compose file and upload... else could've been better...

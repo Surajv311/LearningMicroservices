@@ -1,0 +1,1 @@
+# In the context of modules and packages, an __init__.py file is used to mark a directory as a Python package. When a directory contains an __init__.py file, it is recognized as a package, allowing you to import modules from that directory.
